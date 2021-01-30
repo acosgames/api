@@ -6,6 +6,7 @@ const cookieParser = require('cookie-parser');
 const session = require('express-session');
 const MemoryStore = require('memorystore')(session)
 
+const profiler = require('forkoff-shared/util/Profiler')
 var port = process.env.PORT || 8080;
 
 app.use(cors({
