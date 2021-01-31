@@ -6,7 +6,7 @@ const cookieParser = require('cookie-parser');
 const session = require('express-session');
 const MemoryStore = require('memorystore')(session)
 
-const profiler = require('forkoff-shared/util/Profiler')
+const profiler = require('../forkoff-shared/util/Profiler')
 var port = process.env.PORT || 8080;
 
 app.use(cors({
@@ -30,8 +30,37 @@ app.use(session({
 app.use(cookieParser());
 app.use(express.json());
 
+// // initialises the Issuer and the Client
+// app.use(auth.initialize);
+// // Deals with the user session
+// app.use(auth.session);
+// // Adds the OAuth / OpenId necessary routes.
+// app.use(auth.routes());
 
 
+app.get("/", (req, res) => {
+    // use the pre configured view engine
+    // to render the index.mustache file
+    res.json({ "page": "homepage" });
+});
+
+app.get("/private", auth.requireAuth, (req, res) => {
+    // This is the main high level hook for the user
+    // session, we will be building this later
+    if (!req.session || !req.session.tokenSet) {
+
+        return
+    }
+    const claims = req.session.tokenSet.claims();
+
+    // render private.mustache and interpolate
+    // the following data
+    res.render("private", {
+        email: claims.email,
+        picture: claims.picture,
+        name: claims.name,
+    });
+});
 
 http.listen(process.env.PORT || port, function () {
     var host = http.address().address
