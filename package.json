@@ -14,8 +14,10 @@
     "cors": "^2.8.5",
     "express": "^4.17.1",
     "express-session": "^1.17.1",
-    "forkoff-shared": "file:./forkoff-shared",
+    "forkoff-shared": "file:../forkoff-shared",
     "memorystore": "^1.6.4",
-    "openid-client": "^4.4.0"
+    "passport": "^0.4.1",
+    "passport-google-oauth20": "^2.0.0",
+    "passport-microsoft": "^0.1.0"
   }
 }

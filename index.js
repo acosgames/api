@@ -37,30 +37,50 @@ app.use(express.json());
 // // Adds the OAuth / OpenId necessary routes.
 // app.use(auth.routes());
 
+const MySQL = require('forkoff-shared/services/mysql.js');
+const mysql = new MySQL();
 
-app.get("/", (req, res) => {
+const SocialAuth = require('./src/api/authentication/socialauth');
+const social = new SocialAuth();
+
+app.use(social.routes());
+app.get("/", async (req, res) => {
+
+    let response = {};
+    try {
+        let db = await mysql.begin('get all peeps');
+        response = await db.sql('SELECT * FROM person');
+        mysql.end('get all peeps');
+
+        let db2 = await mysql.db();
+        response = await db2.sql('SELECT * FROM person');
+    }
+    catch (e) {
+        console.error(e);
+    }
+
     // use the pre configured view engine
     // to render the index.mustache file
-    res.json({ "page": "homepage" });
+    res.json(response);
 });
 
-app.get("/private", auth.requireAuth, (req, res) => {
-    // This is the main high level hook for the user
-    // session, we will be building this later
-    if (!req.session || !req.session.tokenSet) {
+// app.get("/private", auth.requireAuth, (req, res) => {
+//     // This is the main high level hook for the user
+//     // session, we will be building this later
+//     if (!req.session || !req.session.tokenSet) {
 
-        return
-    }
-    const claims = req.session.tokenSet.claims();
+//         return
+//     }
+//     const claims = req.session.tokenSet.claims();
 
-    // render private.mustache and interpolate
-    // the following data
-    res.render("private", {
-        email: claims.email,
-        picture: claims.picture,
-        name: claims.name,
-    });
-});
+//     // render private.mustache and interpolate
+//     // the following data
+//     res.render("private", {
+//         email: claims.email,
+//         picture: claims.picture,
+//         name: claims.name,
+//     });
+// });
 
 http.listen(process.env.PORT || port, function () {
     var host = http.address().address
