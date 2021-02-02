@@ -22,6 +22,7 @@ module.exports = class GoogleAuth {
       callbackURL: this.credentials.googleauth.redirect_uri,  //same URI as registered in Google console portal
       clientID: this.credentials.googleauth.client_id, //replace with copied value from Google console
       clientSecret: this.credentials.googleauth.client_secret,
+      scope: this.credentials.googleauth.scope
     },
       self.strategyCallback
     )

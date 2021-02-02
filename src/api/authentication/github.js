@@ -1,0 +1,50 @@
+
+
+const GithubStrategy = require('passport-github2').Strategy;
+// const jwt = require('jsonwebtoken');
+const credutil = require('forkoff-shared/util/credentials');
+
+module.exports = class GithubAuth {
+    constructor(credentials) {
+        this.credentials = credentials || credutil();
+
+        this.strat = null;
+    }
+
+    strategy() {
+        if (this.strat)
+            return this.strat;
+
+        var self = this;
+        this.strat = new GithubStrategy({
+            callbackURL: this.credentials.githubauth.redirect_uri,  //same URI as registered in Google console portal
+            clientID: this.credentials.githubauth.client_id, //replace with copied value from Google console
+            clientSecret: this.credentials.githubauth.client_secret,
+            scope: this.credentials.githubauth.scope
+        },
+            self.strategyCallback
+        )
+
+        return this.strat;
+    }
+
+    async strategyCallback(accessToken, refreshToken, profile, done) {
+        try {
+            let user_email = profile.username; //profile object has the user info
+            //let [user] = await db('users').select(['id', 'name', 'email']).where('email', user_email); //check whether user exist in database
+            let redirect_url = "";
+            if (user_email) {
+                //const token = jwt.sign(user, process.env.JWT_SECRET, { expiresIn: '1h' }); //generating token
+                //redirect_url = `http://localhost:3000/${token}` //registered on FE for auto-login
+                return done(null, { email: user_email });  //redirect_url will get appended to req.user object : passport.js in action
+            } else {
+                //redirect_url = `http://localhost:3000/user-not-found/`;  // fallback page
+                //return done(null, redirect_url);
+                return done(null, {});
+            }
+        }
+        catch (error) {
+            done(error)
+        }
+    }
+}

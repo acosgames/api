@@ -2,6 +2,8 @@ const passport = require('passport');
 const credutil = require('forkoff-shared/util/credentials');
 const { Router } = require('express');
 const GoogleAuth = require('./google');
+const MicrosoftAuth = require('./microsoft');
+const GithubAuth = require('./github');
 
 const MySQL = require('forkoff-shared/services/mysql.js');
 const mysql = new MySQL();
@@ -15,6 +17,8 @@ module.exports = class SocialAuth {
         this.credentials = credentials || credutil();
 
         this.google = new GoogleAuth(credentials);
+        this.microsoft = new MicrosoftAuth(credentials);
+        this.github = new GithubAuth(credentials);
 
         this.router = new Router();
         this.initialize();
@@ -23,6 +27,8 @@ module.exports = class SocialAuth {
     initialize() {
         this.router.use(passport.initialize());
         passport.use(this.google.strategy())
+        passport.use(this.microsoft.strategy());
+        passport.use(this.github.strategy());
 
         passport.serializeUser(function (user, done) {
             done(null, user);
@@ -35,8 +41,15 @@ module.exports = class SocialAuth {
 
     routes() {
 
-        this.router.get('/login/google', passport.authenticate('google', { scope: ['email'] }));
+        this.router.get('/login/google', passport.authenticate('google'));
         this.router.get('/oauth/google', passport.authenticate('google', { failureRedirect: '/' }), this.redirect);
+
+        this.router.get('/login/microsoft', passport.authenticate('microsoft'));
+        this.router.get('/oauth/microsoft', passport.authenticate('microsoft', { failureRedirect: '/' }), this.redirect);
+
+        this.router.get('/login/github', passport.authenticate('github'));
+        this.router.get('/oauth/github', passport.authenticate('github', { failureRedirect: '/' }), this.redirect);
+
 
         return this.router;
     }
@@ -47,14 +60,14 @@ module.exports = class SocialAuth {
 
 
         console.log(req.session.passport);
-        let user = req.session.passport;
+        let user = req.session.passport.user;
 
         try {
             let dbUser = await users.findOrCreateUser(user.email);
             if (!dbUser) {
                 throw { code: "E_INVALID_USER_CREATE", info: { dbUser, user } };
             }
-            console.log(results);
+            console.log(dbUser);
         }
         catch (e) {
             console.error(e);
