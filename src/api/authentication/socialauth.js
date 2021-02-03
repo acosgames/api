@@ -92,19 +92,20 @@ module.exports = class SocialAuth {
             }
 
             if (!dbUser.displayname || dbUser.displayname.length == 0 || dbUser.displayname == dbUser.apikey) {
-                res.header('X-API-KEY', dbUser.apikey)
-                res.redirect('http://localhost:3000/createplayer/' + dbUser.apikey);
+                res.cookie('X-API-KEY', dbUser.apikey)
+                
+                res.redirect('http://localhost:3000/createplayer/');
                 return;
             }
             console.log(dbUser);
         }
         catch (e) {
             console.error(e);
-            res.redirect('http://localhost:3000/login');
+            res.redirect('http://localhost:3000/login/');
         }
 
-        res.header('X-API-KEY', dbUser.apikey)
-        res.redirect('http://localhost:3000/success/' + dbUser.apikey)
+        res.cookie('X-API-KEY', user.apikey)
+        res.redirect('http://localhost:3000/success/')
     }
 
     getDomain() {

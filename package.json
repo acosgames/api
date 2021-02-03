@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon --watch . --watch ../forkoff-shared/ index.js",
+    "start": "nodemon --inspect --watch . --watch ../forkoff-shared/ index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
