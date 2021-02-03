@@ -8,8 +8,8 @@ const GithubAuth = require('./github');
 const MySQL = require('forkoff-shared/services/mysql.js');
 const mysql = new MySQL();
 
-const UserService = require('forkoff-shared/services/user');
-const users = new UserService();
+const PersonService = require('forkoff-shared/services/person');
+const persons = new PersonService();
 
 
 module.exports = class SocialAuth {
@@ -39,42 +39,72 @@ module.exports = class SocialAuth {
         });
     }
 
+    auth() {
+        let router = new Router();
+        router.use(async (req, res, next) => {
+            let requestUserid = req.header('X-USER-ID');
+            let requestApikey = req.header('X-API-KEY');
+            let sessionApikey = req.session.apikey;
+
+            let passedRequest = (!requestApikey || requestApikey.length == 0);
+            let passedSession = (!sessionApikey || sessionApikey.length == 0);
+
+            if (passedRequest && requestApikey != sessionApikey) {
+                // let user = await getUser(
+            }
+
+            if (!passedRequest) {//&& !passedSession) {
+                res.json({ code: 'E_USER_NOTAUTHORIZED' });
+                return;
+            }
+            next();
+        });
+        return router;
+    }
+
     routes() {
 
-        this.router.get('/login/google', passport.authenticate('google'));
-        this.router.get('/oauth/google', passport.authenticate('google', { failureRedirect: '/' }), this.redirect);
+        this.router.get('/login/google', passport.authenticate('google', { session: false }));
+        this.router.get('/oauth/google', passport.authenticate('google', { failureRedirect: '/', session: false }), this.redirect);
 
-        this.router.get('/login/microsoft', passport.authenticate('microsoft'));
-        this.router.get('/oauth/microsoft', passport.authenticate('microsoft', { failureRedirect: '/' }), this.redirect);
+        this.router.get('/login/microsoft', passport.authenticate('microsoft', { session: false }));
+        this.router.get('/oauth/microsoft', passport.authenticate('microsoft', { failureRedirect: '/', session: false }), this.redirect);
 
-        this.router.get('/login/github', passport.authenticate('github'));
-        this.router.get('/oauth/github', passport.authenticate('github', { failureRedirect: '/' }), this.redirect);
+        this.router.get('/login/github', passport.authenticate('github', { session: false }));
+        this.router.get('/oauth/github', passport.authenticate('github', { failureRedirect: '/', session: false }), this.redirect);
 
 
         return this.router;
     }
 
     async redirect(req, res) {
-        if (!req.session || !req.session.passport)
+        if (!req.user)
             res.redirect('http://localhost:3000')
 
 
-        console.log(req.session.passport);
-        let user = req.session.passport.user;
+        // console.log(req.session.passport);
+        let user = req.user;
 
         try {
-            let dbUser = await users.findOrCreateUser(user.email);
+            let dbUser = await persons.findOrCreateUser(user);
             if (!dbUser) {
                 throw { code: "E_INVALID_USER_CREATE", info: { dbUser, user } };
+            }
+
+            if (!dbUser.displayname || dbUser.displayname.length == 0 || dbUser.displayname == dbUser.apikey) {
+                res.header('X-API-KEY', dbUser.apikey)
+                res.redirect('http://localhost:3000/createplayer/' + dbUser.apikey);
+                return;
             }
             console.log(dbUser);
         }
         catch (e) {
             console.error(e);
+            res.redirect('http://localhost:3000/login');
         }
 
-
-        res.redirect('http://localhost:3000')
+        res.header('X-API-KEY', dbUser.apikey)
+        res.redirect('http://localhost:3000/success/' + dbUser.apikey)
     }
 
     getDomain() {
