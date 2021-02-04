@@ -21,12 +21,30 @@ module.exports = class PersonAPI {
         return this.router;
     }
 
-    createDisplayname(req, res, next) {
+    async createDisplayname(req, res, next) {
+        let user = req.body;
 
-        let apikey = req.header('X-API-KEY');
-        console.log(apikey);
+        try {
+            if (!user || !user.displayname) {
+                res.json({ code: "E_MISSING_DISPLAYNAME" });
+                return;
+            }
+            let sessionUser = req.session.user;
+            user.id = sessionUser.id;
+            user.displayname = user.displayname.replace(/[^A-Za-z0-9\_]/ig, "");
+            user = await persons.updateUser(user);
+        }
+        catch (e) {
+            if (e.errno == 1062) {
+                res.json({ code: "E_EXISTS_DISPLAYNAME" });
+                return;
+            }
+            res.json({ code: "E_MISSING_DISPLAYNAME" });
+            return;
+        }
 
-
+        res.json(user);
+        return;
     }
 
     async redirect(req, res) {

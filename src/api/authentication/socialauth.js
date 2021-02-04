@@ -42,21 +42,44 @@ module.exports = class SocialAuth {
     auth() {
         let router = new Router();
         router.use(async (req, res, next) => {
-            let requestUserid = req.header('X-USER-ID');
-            let requestApikey = req.header('X-API-KEY');
-            let sessionApikey = req.session.apikey;
+            //let requestUserid = req.header('X-USER-ID');
 
-            let passedRequest = (!requestApikey || requestApikey.length == 0);
-            let passedSession = (!sessionApikey || sessionApikey.length == 0);
-
-            if (passedRequest && requestApikey != sessionApikey) {
-                // let user = await getUser(
+            let user;
+            if (req.session && req.session.user) {
+                user = req.session.user;
             }
 
-            if (!passedRequest) {//&& !passedSession) {
+            if (!user) {
+                user = {};
+                let apikey = req.cookies['X-API-KEY'];
+                if (!apikey) {
+                    apikey = req.header('X-API-KEY');
+                    if (!apikey) {
+                        res.json({ code: 'E_USER_NOTAUTHORIZED' });
+                        return;
+                    }
+
+                }
+                user.apikey = apikey;
+
+                user = await persons.findUser(user);
+                if (!user) {
+                    res.json({ code: 'E_USER_NOTAUTHORIZED' });
+                    return;
+                }
+
+                user.auth = true;
+                req.session.user = user;
+
+                next();
+                return;
+            }
+
+            if (!user.auth) {
                 res.json({ code: 'E_USER_NOTAUTHORIZED' });
                 return;
             }
+
             next();
         });
         return router;
@@ -91,10 +114,13 @@ module.exports = class SocialAuth {
                 throw { code: "E_INVALID_USER_CREATE", info: { dbUser, user } };
             }
 
+            dbUser.auth = true;
+            req.session.user = dbUser;
+
             if (!dbUser.displayname || dbUser.displayname.length == 0 || dbUser.displayname == dbUser.apikey) {
                 res.cookie('X-API-KEY', dbUser.apikey)
-                
-                res.redirect('http://localhost:3000/createplayer/');
+                //res.setHeader('Set-Cookie', 'X-API-KEY=' + dbUser.apikey + '; HttpOnly');
+                res.redirect('http://localhost:3000/player/create');
                 return;
             }
             console.log(dbUser);
@@ -105,7 +131,8 @@ module.exports = class SocialAuth {
         }
 
         res.cookie('X-API-KEY', user.apikey)
-        res.redirect('http://localhost:3000/success/')
+        //res.setHeader('Set-Cookie', 'X-API-KEY=' + dbUser.apikey + '; HttpOnly');
+        res.redirect('http://localhost:3000/games')
     }
 
     getDomain() {

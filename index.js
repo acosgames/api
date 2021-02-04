@@ -11,6 +11,11 @@ var port = process.env.PORT || 8080;
 const app = express()
 var httpServer = http.createServer(app);
 
+app.use((req, res, next) => {
+    console.log('test');
+    next();
+})
+
 app.use(cors({
     origin: [
         'http://localhost:3000', 'http://localhost:8080', 'http://localhost:8000', '*'
@@ -24,11 +29,17 @@ app.use(session({
     store: new MemoryStore({
         checkPeriod: 86400000 // prune expired entries every 24h
     }),
-    secret: 'MYSECRETKEYHAHAHAH',
+    secret: 'alksdjflkasjdflkasjasdfasdfsa1234',
     resave: false,
-    saveUninitialized: true,
+    saveUninitialized: false,
     cookie: { secure: false }
 }))
+// app.use((req,res,next) => {
+//     app.use((req,res,next) => {
+
+
+// })
+
 app.use(cookieParser());
 app.use(express.json());
 
