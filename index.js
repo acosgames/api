@@ -3,13 +3,15 @@ const cors = require('cors');
 var http = require('http')
 const cookieParser = require('cookie-parser');
 const session = require('express-session');
-const MemoryStore = require('memorystore')(session)
+// const MemoryStore = require('memorystore')(session)
+var FileStore = require('session-file-store')(session);
 const profiler = require('forkoff-shared/util/Profiler')
 
 var port = process.env.PORT || 8080;
 
 const app = express()
 var httpServer = http.createServer(app);
+var fileStoreOptions = {};
 
 app.use((req, res, next) => {
     console.log('test');
@@ -26,9 +28,10 @@ app.use(cors({
 }));
 
 app.use(session({
-    store: new MemoryStore({
-        checkPeriod: 86400000 // prune expired entries every 24h
-    }),
+    store: new FileStore(fileStoreOptions),
+    // store: new MemoryStore({
+    //     checkPeriod: 86400000 // prune expired entries every 24h
+    // }),
     secret: 'alksdjflkasjdflkasjasdfasdfsa1234',
     resave: false,
     saveUninitialized: false,
@@ -45,16 +48,16 @@ app.use(express.json());
 
 const SocialAuth = require('./src/api/authentication/socialauth');
 const PersonAPI = require('./src/api/person');
-
+const DevGameAPI = require('./src/api/devgame');
 const social = new SocialAuth();
 const person = new PersonAPI();
-
+const devgame = new DevGameAPI();
 
 app.use(social.routes());
 app.use(social.auth());
 
 app.use(person.routes());
-
+app.use(devgame.routes());
 
 httpServer.listen(process.env.PORT || port, function () {
     var host = httpServer.address().address

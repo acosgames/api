@@ -26,7 +26,7 @@ module.exports = class PersonAPI {
 
         try {
             if (!user || !user.displayname) {
-                res.json({ code: "E_MISSING_DISPLAYNAME" });
+                res.json({ ecode: "E_MISSING_DISPLAYNAME" });
                 return;
             }
             let sessionUser = req.session.user;
@@ -36,10 +36,10 @@ module.exports = class PersonAPI {
         }
         catch (e) {
             if (e.errno == 1062) {
-                res.json({ code: "E_EXISTS_DISPLAYNAME" });
+                res.json({ ecode: "E_EXISTS_DISPLAYNAME" });
                 return;
             }
-            res.json({ code: "E_MISSING_DISPLAYNAME" });
+            res.json({ ecode: "E_MISSING_DISPLAYNAME" });
             return;
         }
 
@@ -58,7 +58,7 @@ module.exports = class PersonAPI {
         try {
             let dbUser = await persons.findOrCreateUser(user);
             if (!dbUser) {
-                throw { code: "E_INVALID_USER_CREATE", info: { dbUser, user } };
+                throw { ecode: "E_INVALID_USER_CREATE", info: { dbUser, user } };
             }
 
             if (!dbUser.displayname || dbUser.length == 0) {

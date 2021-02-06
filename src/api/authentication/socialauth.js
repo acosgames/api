@@ -55,7 +55,7 @@ module.exports = class SocialAuth {
                 if (!apikey) {
                     apikey = req.header('X-API-KEY');
                     if (!apikey) {
-                        res.json({ code: 'E_USER_NOTAUTHORIZED' });
+                        res.json({ ecode: 'E_USER_NOTAUTHORIZED' });
                         return;
                     }
 
@@ -64,21 +64,26 @@ module.exports = class SocialAuth {
 
                 user = await persons.findUser(user);
                 if (!user) {
-                    res.json({ code: 'E_USER_NOTAUTHORIZED' });
+                    res.json({ ecode: 'E_USER_NOTAUTHORIZED' });
                     return;
                 }
 
                 user.auth = true;
                 req.session.user = user;
+                req.session.prevUrl = req.originalUrl;
 
                 next();
                 return;
             }
 
             if (!user.auth) {
-                res.json({ code: 'E_USER_NOTAUTHORIZED' });
+                res.json({ ecode: 'E_USER_NOTAUTHORIZED' });
                 return;
             }
+
+            user.auth = true;
+            req.session.user = user;
+            req.session.prevUrl = req.originalUrl;
 
             next();
         });
@@ -111,7 +116,7 @@ module.exports = class SocialAuth {
         try {
             let dbUser = await persons.findOrCreateUser(user);
             if (!dbUser) {
-                throw { code: "E_INVALID_USER_CREATE", info: { dbUser, user } };
+                throw { ecode: "E_INVALID_USER_CREATE", info: { dbUser, user } };
             }
 
             dbUser.auth = true;
