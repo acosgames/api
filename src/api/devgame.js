@@ -10,6 +10,8 @@ const upload = new UploadFileService();
 const DevGameService = require('forkoff-shared/services/devgame');
 const devgame = new DevGameService();
 
+const { GeneralError } = require('forkoff-shared/util/errorhandler');
+
 module.exports = class DevGameAPI {
     constructor(credentials) {
         this.credentials = credentials || credutil();
@@ -22,29 +24,46 @@ module.exports = class DevGameAPI {
 
         let gameupload = upload.middleware('fivesecondgames', ['image/jpeg', 'image/png']);
 
+        this.router.get('/dev/find/game/:gameid', this.devFindGame);
         this.router.post('/dev/create/game', this.devCreateGame);
         this.router.post('/dev/update/game/images', this.devUpdateGameImages);
         return this.router;
     }
 
-    async devUpdateGameImages(req, res, next) {
-        let game = req.body;
+    async devFindGame(req, res, next) {
+        let game = { id: req.params.gameid };
+
+        try {
+            if (!game) {
+                throw new GeneralError("E_MISSING_DEVGAME");
+            }
+            let sessionUser = req.session.user;
+
+            let pushedGame = await devgame.findGame(game, sessionUser);
+            if (!pushedGame) {
+                throw new GeneralError("E_GAME_NOTFOUND");
+            }
+
+            res.json(pushedGame);
+        }
+        catch (e) {
+            next(e);
+        }
+
     }
 
-    async devCreateGame(req, res, next) {
+    async devUpdateGameImages(req, res, next) {
         let game = req.body;
 
         try {
             if (!game) {
-                res.status(400).json({ ecode: "E_MISSING_DEVGAME" });
-                return;
+                throw new GeneralError("E_GAME_INVALID");
             }
             let sessionUser = req.session.user;
 
-            let pushedGame = await devgame.createOrUpdateGame(game, sessionUser);
+            let pushedGame = await devgame.updateGame(game, sessionUser);
             if (!pushedGame) {
-                res.status(400).json({ ecode: "E_CREATEFAILED_GAME" });
-                return;
+                throw new GeneralError("E_GAME_UPDATEFAILED");
             }
 
             if (pushedGame.ecode)
@@ -52,7 +71,30 @@ module.exports = class DevGameAPI {
             res.json(pushedGame);
         }
         catch (e) {
-            res.status(400).json(e);
+            next(e);
+        }
+    }
+
+    async devCreateGame(req, res, next) {
+        let game = req.body;
+
+        try {
+            if (!game) {
+                throw new GeneralError("E_MISSING_DEVGAME");
+            }
+            let sessionUser = req.session.user;
+
+            let pushedGame = await devgame.createOrUpdateGame(game, sessionUser);
+            if (!pushedGame) {
+                throw new GeneralError("E_CREATEFAILED_GAME");
+            }
+
+            if (pushedGame.ecode)
+                res.status(400);
+            res.json(pushedGame);
+        }
+        catch (e) {
+            next(e);
         }
 
     }

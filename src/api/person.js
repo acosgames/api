@@ -35,44 +35,12 @@ module.exports = class PersonAPI {
             user = await persons.updateUser(user);
         }
         catch (e) {
-            if (e.errno == 1062) {
-                res.json({ ecode: "E_EXISTS_DISPLAYNAME" });
-                return;
-            }
-            res.json({ ecode: "E_MISSING_DISPLAYNAME" });
+            next(e);
             return;
         }
 
         res.json(user);
         return;
-    }
-
-    async redirect(req, res) {
-        if (!req.session || !req.session.passport)
-            res.redirect('http://localhost:3000')
-
-
-        console.log(req.session.passport);
-        let user = req.session.passport.user;
-
-        try {
-            let dbUser = await persons.findOrCreateUser(user);
-            if (!dbUser) {
-                throw { ecode: "E_INVALID_USER_CREATE", info: { dbUser, user } };
-            }
-
-            if (!dbUser.displayname || dbUser.length == 0) {
-                res.redirect('http://localhost:3000/createplayer');
-                return;
-            }
-            console.log(dbUser);
-        }
-        catch (e) {
-            console.error(e);
-        }
-
-
-        res.redirect('http://localhost:3000')
     }
 
 }

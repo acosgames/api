@@ -6,6 +6,7 @@ const session = require('express-session');
 // const MemoryStore = require('memorystore')(session)
 var FileStore = require('session-file-store')(session);
 const profiler = require('forkoff-shared/util/Profiler')
+const { GeneralError } = require('forkoff-shared/util/errorhandler');
 
 var port = process.env.PORT || 8080;
 
@@ -58,6 +59,20 @@ app.use(social.auth());
 
 app.use(person.routes());
 app.use(devgame.routes());
+
+
+app.use((err, req, res, next) => {
+    console.log(err);
+    if (err instanceof GeneralError) {
+        err.send(res);
+        return;
+    }
+    res.status(400).json({ ecode: 'E_INVALID_API' });
+})
+
+app.use((req, res, next) => {
+    res.status(400).json({ ecode: 'E_INVALID_API' });
+})
 
 httpServer.listen(process.env.PORT || port, function () {
     var host = httpServer.address().address
