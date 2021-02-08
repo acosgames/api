@@ -52,7 +52,7 @@ module.exports = class SocialAuth {
             if (!user) {
                 user = {};
                 let apikey = req.cookies['X-API-KEY'];
-                if (!apikey) {
+                if (apikey == 'undefined' || !apikey) {
                     apikey = req.header('X-API-KEY');
                     if (!apikey) {
                         res.json({ ecode: 'E_USER_NOTAUTHORIZED' });

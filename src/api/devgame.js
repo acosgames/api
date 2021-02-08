@@ -22,13 +22,16 @@ module.exports = class DevGameAPI {
 
     routes() {
 
-        let gameupload = upload.middleware('fivesecondgames', ['image/jpeg', 'image/png']);
 
-        this.router.get('/dev/find/game/:gameid', this.devFindGame);
-        this.router.post('/dev/create/game', this.devCreateGame);
-        this.router.post('/dev/update/game/images', this.devUpdateGameImages);
+
+        this.router.get('/dev/find/game/:gameid', this.devFindGame.bind(this));
+        this.router.post('/dev/create/game', this.devCreateGame.bind(this));
+        this.router.post('/dev/update/game', this.devUpdateGame.bind(this));
+        this.router.post('/dev/update/game/images', this.devUpdateGameImages.bind(this));
         return this.router;
     }
+
+
 
     async devFindGame(req, res, next) {
         let game = { id: req.params.gameid };
@@ -52,23 +55,60 @@ module.exports = class DevGameAPI {
 
     }
 
-    async devUpdateGameImages(req, res, next) {
+    async devUpdateGame(req, res, next) {
         let game = req.body;
 
         try {
             if (!game) {
-                throw new GeneralError("E_GAME_INVALID");
+                throw new GeneralError("E_MISSING_DEVGAME");
             }
             let sessionUser = req.session.user;
 
             let pushedGame = await devgame.updateGame(game, sessionUser);
             if (!pushedGame) {
-                throw new GeneralError("E_GAME_UPDATEFAILED");
+                throw new GeneralError("E_CREATEFAILED_GAME");
             }
 
             if (pushedGame.ecode)
                 res.status(400);
             res.json(pushedGame);
+        }
+        catch (e) {
+            next(e);
+        }
+
+    }
+
+    cbImageMeta(req, file, cb) {
+        cb(null, { filename: file.originalname });
+    }
+
+    cbImageKey(req, file, cb) {
+        let key = file.originalname;
+
+        let err = null;
+
+        cb(err, key)
+    }
+    async devUpdateGameImages(req, res, next) {
+        // let game = req.body;
+
+        try {
+            let middleware = upload.middleware('fivesecondgames', ['image/jpeg', 'image/png'], this.cbImageMeta, this.cbImageKey);
+            middleware = middleware.array('images', 4);
+
+            middleware(req, res, function (err) {
+                if (err) {
+                    // An unknown error occurred when uploading.
+                    res.status(400).json({ ecode: "E_UPLOAD_FAILED" });
+                    return;
+                }
+
+                let files = req.files;
+                files = files.map(v => v.key);
+                res.json({ images: files })
+                return;
+            })
         }
         catch (e) {
             next(e);
