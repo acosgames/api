@@ -26,8 +26,10 @@ module.exports = class DevGameAPI {
     routes() {
         this.router.get('/dev/find/game/:gameid', this.devFindGame.bind(this));
 
-        this.router.post('/dev/create/client', this.devCreateGame.bind(this));
-
+        this.router.post('/dev/create/client/:gameid', this.devCreateClient.bind(this));
+        this.router.post('/dev/create/server/:gameid', this.devCreateServer.bind(this));
+        this.router.post('/dev/find/client/:gameid', this.devFindClient.bind(this));
+        this.router.post('/dev/find/server/:gameid', this.devFindServer.bind(this));
 
         this.router.post('/dev/create/game', this.devCreateGame.bind(this));
         this.router.post('/dev/update/game', this.devUpdateGame.bind(this));
@@ -254,6 +256,7 @@ module.exports = class DevGameAPI {
     async devCreateClient(req, res, next) {
         let client = req.body;
 
+        client.gameid = req.params.gameid;
         try {
             if (!client) {
                 throw new GeneralError("E_MISSING_DEVCLIENT");
@@ -278,6 +281,7 @@ module.exports = class DevGameAPI {
     async devCreateServer(req, res, next) {
         let server = req.body;
 
+        server.gameid = req.params.gameid;
         try {
             if (!server) {
                 throw new GeneralError("E_MISSING_DEVSERVER");
