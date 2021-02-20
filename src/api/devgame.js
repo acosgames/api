@@ -263,7 +263,7 @@ module.exports = class DevGameAPI {
             }
             let sessionUser = req.session.user;
 
-            let pushedClient = await devgame.createOrUpdateClient(client, sessionUser);
+            let pushedClient = await devgame.createClient(client, sessionUser);
             if (!pushedClient) {
                 throw new GeneralError("E_CREATEFAILED_CLIENT");
             }
