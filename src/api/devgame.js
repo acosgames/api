@@ -24,19 +24,64 @@ module.exports = class DevGameAPI {
 
 
     routes() {
-        this.router.get('/dev/find/game/:gameid', this.devFindGame.bind(this));
 
-        this.router.post('/dev/create/client/:gameid', this.devCreateClient.bind(this));
         this.router.post('/dev/create/server/:gameid', this.devCreateServer.bind(this));
-        this.router.post('/dev/find/client/:gameid', this.devFindClient.bind(this));
         this.router.post('/dev/find/server/:gameid', this.devFindServer.bind(this));
 
+        this.router.post('/dev/create/client/:gameid', this.devCreateClient.bind(this));
+        this.router.post('/dev/find/client/:gameid', this.devFindClient.bind(this));
+        this.router.post('/dev/update/client/images/:clientid', this.devUpdateClientImages.bind(this));
+        this.router.post('/dev/update/client/bundle/:clientid', this.devUpdateClientBundle.bind(this));
+        this.router.get('/dev/find/game/:gameid', this.devFindGame.bind(this));
         this.router.post('/dev/create/game', this.devCreateGame.bind(this));
         this.router.post('/dev/update/game', this.devUpdateGame.bind(this));
         this.router.post('/dev/update/game/images/:gameid', this.devUpdateGameImages.bind(this));
         return this.router;
     }
 
+    async devUpdateClientBundle(req, res, next) {
+        try {
+            let uploadMiddleware = upload.middleware('fivesecondgames', ['text/javascript'], this.cbImageMeta, this.cbClientBundleKey);
+            let imageMiddleware = uploadMiddleware.array('bundle', 1);
+
+            let gameid = req.params.gameid;
+            let clientid = req.params.clientid;
+            let user = req.session.user;
+
+            let clients = await devgame.findClient({ id: clientid }, user);
+            if (!clients || clients.length == 0)
+                return;
+
+            let client = clients[0];
+
+            req.devclient = client;
+
+            let deleted = await upload.deleteBundles(client);
+
+            imageMiddleware(req, res, async function (err) {
+                if (err) {
+                    console.error(err);
+                    // An unknown error occurred when uploading.
+                    next(new GeneralError("E_UPLOAD_FAILED"));
+                    return;
+                }
+
+                let user = req.session.user;
+                let files = req.files;
+                files = files.map(v => v.key.replace(gameid + '/client/' + clientid + '/', ''));
+
+                let response = await devgame.updateClientBundle(client, user, files);
+                console.log(response.data);
+
+                res.json({ images: files });
+                return
+            })
+        }
+        catch (e) {
+            console.error(e);
+            next(new GeneralError("E_UPLOAD_FAILED"));
+        }
+    }
     async devFindGame(req, res, next) {
         let game = { id: req.params.gameid };
 
@@ -211,6 +256,100 @@ module.exports = class DevGameAPI {
 
         cb(null, key)
     }
+
+    cbClientBundleKey(req, file, cb) {
+        if (!req.session.user) {
+            let err = new GeneralError('E_USER_NOTAUTHORIZED');
+            cb(err, 'failed')
+            return;
+        }
+
+        let client = req.devclient;
+        var filename = file.originalname;
+        let ext = filename.split('.').pop();
+
+        if (filename == ext)
+            ext = 'js';
+
+        if (client.clientversion) {
+            client.clientversion = client.clientversion + 1;
+        } else {
+            client.clientversion = 1;
+        }
+        // filename = genShortId(4) + '.' + ext;
+        client.build_client = client.clientversion + '.' + ext;
+
+        let key = client.gameid + '/client/' + client.id + '/' + client.build_client;
+
+        cb(null, key)
+    }
+
+    cbClientImageKey(req, file, cb) {
+        if (!req.session.user) {
+            let err = new GeneralError('E_USER_NOTAUTHORIZED');
+            cb(err, 'failed')
+            return;
+        }
+
+        var filename = file.originalname;
+        let ext = filename.split('.').pop();
+
+        if (filename == ext)
+            ext = 'jpg';
+
+        filename = genShortId(4) + '.' + ext;
+        filename = '1.' + ext;
+
+        let gameid = req.body.gameid;
+        let clientid = req.body.clientid;
+        let user = req.session.user;
+
+        let key = gameid + '/client/' + clientid + '/' + filename;
+
+        cb(null, key)
+    }
+
+    async devUpdateClientImages(req, res, next) {
+        try {
+            let uploadMiddleware = upload.middleware('fivesecondgames', ['image/jpeg', 'image/png'], this.cbImageMeta, this.cbClientImageKey);
+            let imageMiddleware = uploadMiddleware.array('images', 1);
+
+            let clientid = req.params.clientid;
+            let user = req.session.user;
+
+            let clients = await devgame.findClient({ id: clientid }, user);
+            if (!clients || clients.length == 0)
+                return;
+
+            let client = clients[0];
+            let deleted = await upload.deleteClientPreviews(client);
+
+            imageMiddleware(req, res, async function (err) {
+                if (err) {
+                    console.error(err);
+                    // An unknown error occurred when uploading.
+                    next(new GeneralError("E_UPLOAD_FAILED"));
+                    return;
+                }
+
+                let clientid = req.body.clientid;
+                let user = req.session.user;
+                let files = req.files;
+                files = files.map(v => v.key.replace(client.gameid + '/client/' + client.id + '/', ''));
+
+                let response = await devgame.updateClientPreviewImages(clientid, user, files);
+                console.log(response);
+
+                res.json({ images: files });
+                return
+            })
+        }
+        catch (e) {
+            console.error(e);
+            next(new GeneralError("E_UPLOAD_FAILED"));
+        }
+
+    }
     async devUpdateGameImages(req, res, next) {
         // let game = req.body;
 
@@ -229,7 +368,7 @@ module.exports = class DevGameAPI {
                 if (err) {
                     console.error(err);
                     // An unknown error occurred when uploading.
-                    reject(new GeneralError("E_UPLOAD_FAILED"));
+                    next(new GeneralError("E_UPLOAD_FAILED"));
                     return;
                 }
 
