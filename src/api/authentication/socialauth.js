@@ -133,9 +133,10 @@ module.exports = class SocialAuth {
         catch (e) {
             console.error(e);
             res.redirect('http://localhost:3000/login/');
+            return;
         }
 
-        res.cookie('X-API-KEY', user.apikey)
+        res.cookie('X-API-KEY', req.session.user.apikey)
         //res.setHeader('Set-Cookie', 'X-API-KEY=' + dbUser.apikey + '; HttpOnly');
         res.redirect('http://localhost:3000/games')
     }

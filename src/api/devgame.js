@@ -71,9 +71,9 @@ module.exports = class DevGameAPI {
                 files = files.map(v => v.key.replace(gameid + '/client/' + clientid + '/', ''));
 
                 let response = await devgame.updateClientBundle(client, user, files);
-                console.log(response.data);
+                console.log(response);
 
-                res.json({ images: files });
+                res.json(client);
                 return
             })
         }
@@ -337,10 +337,11 @@ module.exports = class DevGameAPI {
                 let files = req.files;
                 files = files.map(v => v.key.replace(client.gameid + '/client/' + client.id + '/', ''));
 
-                let response = await devgame.updateClientPreviewImages(clientid, user, files);
+                client.preview_images = files.join(',');
+                let response = await devgame.updateClientPreviewImages(client, user, files);
                 console.log(response);
 
-                res.json({ images: files });
+                res.json(client);
                 return
             })
         }
