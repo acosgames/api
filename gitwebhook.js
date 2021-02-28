@@ -27,3 +27,29 @@ handler.on('issues', function (event) {
         event.payload.issue.number,
         event.payload.issue.title)
 })
+
+handler.on('organization', function (event) {
+    console.log('Received an organization event', event.payload);
+})
+
+handler.on('team', function (event) {
+    console.log('Received an team event', event.payload);
+})
+
+handler.on('team_add', function (event) {
+    console.log('Received an team_add event', event.payload);
+})
+
+
+handler.on('push', function (event) {
+    console.log('Received an push event', event.payload);
+})
+
+
+handler.on('member', function (event) {
+    console.log('Received an member event', event.payload);
+})
+
+handler.on('membership', function (event) {
+    console.log('Received an membership event', event.payload);
+})
