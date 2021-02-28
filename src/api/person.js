@@ -27,6 +27,9 @@ module.exports = class PersonAPI {
         let user = null;
         try {
             let sessionUser = req.session.user;
+            if (!sessionUser.id) {
+                throw new GeneralError('E_USER_NOTAUTHORIZED');
+            }
             user = await persons.findUser({ id: sessionUser.id });
         }
         catch (e) {
