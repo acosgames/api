@@ -25,21 +25,23 @@ module.exports = class DevGameAPI {
 
     routes() {
 
-        this.router.post('/dev/create/server/:gameid', this.devCreateServer.bind(this));
-        this.router.post('/dev/find/server/:gameid', this.devFindServer.bind(this));
+        this.router.post('/dev/create/server/:gameid', this.apiDevCreateServer.bind(this));
+        this.router.post('/dev/find/server/:gameid', this.apiDevFindServer.bind(this));
 
-        this.router.post('/dev/create/client/:gameid', this.devCreateClient.bind(this));
-        this.router.post('/dev/find/client/:gameid', this.devFindClient.bind(this));
-        this.router.post('/dev/update/client/images/:clientid', this.devUpdateClientImages.bind(this));
-        this.router.post('/dev/update/client/bundle/:clientid', this.devUpdateClientBundle.bind(this));
-        this.router.get('/dev/find/game/:gameid', this.devFindGame.bind(this));
-        this.router.post('/dev/create/game', this.devCreateGame.bind(this));
-        this.router.post('/dev/update/game', this.devUpdateGame.bind(this));
-        this.router.post('/dev/update/game/images/:gameid', this.devUpdateGameImages.bind(this));
+        this.router.get('/dev/games/:userid', this.apiDevGames.bind(this));
+
+        this.router.post('/dev/create/client/:gameid', this.apiDevCreateClient.bind(this));
+        this.router.post('/dev/find/client/:gameid', this.apiDevFindClient.bind(this));
+        this.router.post('/dev/update/client/images/:clientid', this.apiDevUpdateClientImages.bind(this));
+        this.router.post('/dev/update/client/bundle/:clientid', this.apiDevUpdateClientBundle.bind(this));
+        this.router.get('/dev/find/game/:gameid', this.apiDevFindGame.bind(this));
+        this.router.post('/dev/create/game', this.apiDevCreateGame.bind(this));
+        this.router.post('/dev/update/game', this.apiDevUpdateGame.bind(this));
+        this.router.post('/dev/update/game/images/:gameid', this.apiDevUpdateGameImages.bind(this));
         return this.router;
     }
 
-    async devUpdateClientBundle(req, res, next) {
+    async apiDevUpdateClientBundle(req, res, next) {
         try {
             let uploadMiddleware = upload.middleware('fivesecondgames', ['text/javascript'], this.cbImageMeta, this.cbClientBundleKey);
             let imageMiddleware = uploadMiddleware.array('bundle', 1);
@@ -56,7 +58,7 @@ module.exports = class DevGameAPI {
 
             req.devclient = client;
 
-            let deleted = await upload.deleteBundles(client);
+            //let deleted = await upload.deleteBundles(client);
 
             imageMiddleware(req, res, async function (err) {
                 if (err) {
@@ -82,7 +84,30 @@ module.exports = class DevGameAPI {
             next(new GeneralError("E_UPLOAD_FAILED"));
         }
     }
-    async devFindGame(req, res, next) {
+
+    async apiDevGames(req, res, next) {
+        let userid = req.params.userid;
+
+        try {
+            if (!userid) {
+                throw new GeneralError("E_USER_MISSING");
+            }
+            // let sessionUser = req.session.user;
+
+            let userGames = await devgame.findGames(userid);
+            if (!userGames) {
+                throw new GeneralError("E_DEVGAMES_NOTFOUND");
+            }
+
+            res.json(userGames);
+        }
+        catch (e) {
+            next(e);
+        }
+
+    }
+
+    async apiDevFindGame(req, res, next) {
         let game = { id: req.params.gameid };
 
         try {
@@ -104,7 +129,7 @@ module.exports = class DevGameAPI {
 
     }
 
-    async devFindClient(req, res, next) {
+    async apiDevFindClient(req, res, next) {
         let client = { id: req.params.gameid };
 
         try {
@@ -126,7 +151,7 @@ module.exports = class DevGameAPI {
 
     }
 
-    async devFindServer(req, res, next) {
+    async apiDevFindServer(req, res, next) {
         let server = { id: req.params.gameid };
 
         try {
@@ -202,7 +227,7 @@ module.exports = class DevGameAPI {
 
     }
 
-    async devUpdateGame(req, res, next) {
+    async apiDevUpdateGame(req, res, next) {
         let game = req.body;
 
         if (typeof game.version == 'string')
@@ -309,7 +334,7 @@ module.exports = class DevGameAPI {
         cb(null, key)
     }
 
-    async devUpdateClientImages(req, res, next) {
+    async apiDevUpdateClientImages(req, res, next) {
         try {
             let uploadMiddleware = upload.middleware('fivesecondgames', ['image/jpeg', 'image/png'], this.cbImageMeta, this.cbClientImageKey);
             let imageMiddleware = uploadMiddleware.array('images', 1);
@@ -351,7 +376,7 @@ module.exports = class DevGameAPI {
         }
 
     }
-    async devUpdateGameImages(req, res, next) {
+    async apiDevUpdateGameImages(req, res, next) {
         // let game = req.body;
 
         try {
@@ -393,7 +418,7 @@ module.exports = class DevGameAPI {
     }
 
 
-    async devCreateClient(req, res, next) {
+    async apiDevCreateClient(req, res, next) {
         let client = req.body;
 
         client.gameid = req.params.gameid;
@@ -418,7 +443,7 @@ module.exports = class DevGameAPI {
 
     }
 
-    async devCreateServer(req, res, next) {
+    async apiDevCreateServer(req, res, next) {
         let server = req.body;
 
         server.gameid = req.params.gameid;
@@ -443,7 +468,7 @@ module.exports = class DevGameAPI {
 
     }
 
-    async devCreateGame(req, res, next) {
+    async apiDevCreateGame(req, res, next) {
         let game = req.body;
 
         try {
@@ -452,7 +477,7 @@ module.exports = class DevGameAPI {
             }
             let sessionUser = req.session.user;
 
-            let pushedGame = await devgame.createOrUpdateGame(game, sessionUser);
+            let pushedGame = await devgame.createGame(game, sessionUser);
             if (!pushedGame) {
                 throw new GeneralError("E_CREATEFAILED_GAME");
             }

@@ -128,6 +128,7 @@ module.exports = class SocialAuth {
                 res.redirect('http://localhost:3000/player/create');
                 return;
             }
+
             console.log(dbUser);
         }
         catch (e) {

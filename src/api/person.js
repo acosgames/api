@@ -17,11 +17,28 @@ module.exports = class PersonAPI {
 
 
     routes() {
-        this.router.post('/person/create/displayname', this.createDisplayname);
+        this.router.post('/person/create/displayname', this.apiCreateDisplayname);
+
+        this.router.get('/person/', this.apiGetProfile);
         return this.router;
     }
 
-    async createDisplayname(req, res, next) {
+    async apiGetProfile(req, res, next) {
+        let user = null;
+        try {
+            let sessionUser = req.session.user;
+            user = await persons.findUser({ id: sessionUser.id });
+        }
+        catch (e) {
+            next(e);
+            return;
+        }
+
+        res.json(user);
+        return;
+    }
+
+    async apiCreateDisplayname(req, res, next) {
         let user = req.body;
 
         try {
@@ -31,8 +48,8 @@ module.exports = class PersonAPI {
             }
             let sessionUser = req.session.user;
             user.id = sessionUser.id;
-            user.displayname = user.displayname.replace(/[^A-Za-z0-9\_]/ig, "");
-            user = await persons.updateUser(user);
+            user.displayname = user.displayname;
+            user = await persons.createDisplayName(user);
         }
         catch (e) {
             next(e);
