@@ -5,9 +5,13 @@ const SmeeClient = require('smee-client')
 
 const PersonService = require('forkoff-shared/services/person');
 const person = new PersonService();
+const DevGameService = require('forkoff-shared/services/devgame');
+const devgame = new DevGameService();
+
 const gh = require('forkoff-shared/services/github');
 var port = process.env.PORT || 9000;
 const FSG = process.env.FSG;
+
 
 
 if (FSG != 'prod' && FSG != 'production') {
@@ -50,24 +54,107 @@ handler.on('issues', function (event) {
         event.payload.issue.title)
 })
 
+handler.on('repository_import', async function (event) {
+    console.log('Received an repository_import event', event.payload);
+
+    switch (event.payload.status) {
+        case 'success': {
+            try {
+
+                let repoName = event.payload.repository.name;
+                let parts = repoName.split('-');
+                let type = parts.pop();
+                repoName = parts.join('-');
+
+                let game = { shortid: repoName };
+                let existing = await devgame.findGame(game);
+                // let existing = await person.findUser(user);
+                if (existing) {
+
+                    let update = {};
+                    if (type == 'server') {
+                        update.git_server = game.shortid + '-server';
+                    } else if (type == 'client') {
+                        update.git_client = game.shortid + '-client';
+                    }
+
+                    let result = await devgame.updateGame(update, { id: existing.ownerid });
+                    console.log(result);
+                }
+            }
+            catch (e) {
+                console.error(e);
+            }
+            break;
+        }
+        case 'cancelled': {
+            console.error("Import cancelled");
+            break;
+        }
+        case 'failure': {
+            console.error("Import failure");
+            break;
+        }
+    }
+});
+
+handler.on('repository', async function (event) {
+    console.log('Received an repository event', event.payload);
+
+    switch (event.payload.action) {
+        case 'created': {
+            try {
+                // let user = { github_id: event.payload.membership.user.id };
+
+                // let existing = await person.findUser(user);
+                // if (existing) {
+
+                //     user = { id: existing.id, isdev: 1 };
+                //     let updateResult = await person.updateUser(user);
+                //     console.log(updateResult);
+                //     let teamResult = await person.createGithubUserTeam(existing);
+                //     console.log(teamResult);
+                // }
+            }
+            catch (e) {
+                console.error(e);
+            }
+            break;
+        }
+        case 'renamed': {
+
+            break;
+        }
+        case 'deleted': {
+
+            break;
+        }
+    }
+});
+
 handler.on('organization', async function (event) {
     console.log('Received an organization event', event.payload);
 
 
     switch (event.payload.action) {
         case 'member_added': {
-
-
             try {
                 let user = { github_id: event.payload.membership.user.id };
                 let existing = await person.findUser(user);
                 if (existing) {
 
-                    user = { id: existing.id, isdev: 1 };
+                    let teamResult = await person.createGithubUserTeam(existing);
+
+                    if (!teamResult || !teamResult.data) {
+                        console.error(existing);
+                        throw new Error("Invalid team result");
+                    }
+                    console.log(teamResult.data);
+
+                    user = { id: existing.id, isdev: 1, github_teamid: teamResult.data.id };
                     let updateResult = await person.updateUser(user);
                     console.log(updateResult);
-                    let teamResult = await person.createGithubUserTeam(user);
-                    console.log(teamResult);
+
                 }
             }
             catch (e) {

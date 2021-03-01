@@ -116,7 +116,7 @@ module.exports = class DevGameAPI {
             }
             let sessionUser = req.session.user;
 
-            let pushedGame = await devgame.findGame(game, sessionUser);
+            let pushedGame = await devgame.findGame(game);
             if (!pushedGame) {
                 throw new GeneralError("E_DEVGAME_NOTFOUND");
             }
@@ -386,7 +386,7 @@ module.exports = class DevGameAPI {
             let gameid = req.params.gameid;
             let user = req.session.user;
 
-            let game = await devgame.findGame({ gameid }, user);
+            let game = await devgame.findGame({ gameid });
 
             let deleted = await upload.deletePreviews(game);
 
