@@ -1,18 +1,18 @@
-const credutil = require('forkoff-shared/util/credentials');
+const credutil = require('fsg-shared/util/credentials');
 const { Router } = require('express');
 
-const MySQL = require('forkoff-shared/services/mysql.js');
+const MySQL = require('fsg-shared/services/mysql.js');
 const mysql = new MySQL();
 
-const UploadFileService = require('forkoff-shared/services/uploadfile');
+const UploadFileService = require('fsg-shared/services/uploadfile');
 const upload = new UploadFileService();
 
-const DevGameService = require('forkoff-shared/services/devgame');
+const DevGameService = require('fsg-shared/services/devgame');
 const devgame = new DevGameService();
 
-const { genShortId } = require('forkoff-shared/util/idgen');
+const { genShortId } = require('fsg-shared/util/idgen');
 
-const { GeneralError } = require('forkoff-shared/util/errorhandler');
+const { GeneralError } = require('fsg-shared/util/errorhandler');
 
 
 module.exports = class DevGameAPI {

@@ -2,7 +2,7 @@
 
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 // const jwt = require('jsonwebtoken');
-const credutil = require('forkoff-shared/util/credentials');
+const credutil = require('fsg-shared/util/credentials');
 
 
 

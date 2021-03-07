@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script>
+            var messages = [];
+            function onDocumentReady(fn) {
+                if (document.readyState === 'complete' || document.readyState === 'interactive') setTimeout(fn, 1);
+                else document.addEventListener('DOMContentLoaded', fn);
+            }
+
+            window.addEventListener('message', onMessage, false);
+
+            function onMessage(evt) {
+                let data = evt.data;
+                let origin = evt.origin;
+                let source = evt.source;
+
+                console.log('Received from origin:' + origin, data);
+            }
+
+            function send(action, payload) {
+                window.parent.postMessage({ action, payload }, '*');
+            }
+
+            onDocumentReady(() => {
+                var test1 = document.getElementById('test1');
+                test1.onclick = (ev) => {
+                    send('connect', 'Hello world!');
+                    console.log('Clicked test1');
+                };
+            });
+        </script>
+    </head>
+    <body>
+        <div>
+            <button type="button" id="test1">Test 1</button>
+        </div>
+    </body>
+</html>

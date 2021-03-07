@@ -5,8 +5,8 @@ const cookieParser = require('cookie-parser');
 const session = require('express-session');
 // const MemoryStore = require('memorystore')(session)
 var FileStore = require('session-file-store')(session);
-const profiler = require('forkoff-shared/util/Profiler')
-const { GeneralError } = require('forkoff-shared/util/errorhandler');
+const profiler = require('fsg-shared/util/Profiler')
+const { GeneralError } = require('fsg-shared/util/errorhandler');
 
 
 
@@ -61,8 +61,10 @@ app.use(social.auth());
 
 app.use(person.routes());
 app.use(devgame.routes());
-
-
+const dir = `${__dirname}/public/`;
+app.get('/iframe', (req, res, next) => {
+    res.sendFile(dir + 'iframe.html');
+})
 app.use((err, req, res, next) => {
     console.log(err);
     if (err instanceof GeneralError) {

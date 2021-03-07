@@ -1,10 +1,10 @@
-const credutil = require('forkoff-shared/util/credentials');
+const credutil = require('fsg-shared/util/credentials');
 const { Router } = require('express');
 
-const MySQL = require('forkoff-shared/services/mysql.js');
+const MySQL = require('fsg-shared/services/mysql.js');
 const mysql = new MySQL();
 
-const PersonService = require('forkoff-shared/services/person');
+const PersonService = require('fsg-shared/services/person');
 const persons = new PersonService();
 
 
