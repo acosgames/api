@@ -25,19 +25,19 @@ module.exports = class DevGameAPI {
 
     routes() {
 
-        this.router.post('/dev/create/server/:gameid', this.apiDevCreateServer.bind(this));
-        this.router.post('/dev/find/server/:gameid', this.apiDevFindServer.bind(this));
+        this.router.post('/api/v1/dev/create/server/:gameid', this.apiDevCreateServer.bind(this));
+        this.router.post('/api/v1/dev/find/server/:gameid', this.apiDevFindServer.bind(this));
 
-        this.router.get('/dev/games/:userid', this.apiDevGames.bind(this));
+        this.router.get('/api/v1/dev/games/:userid', this.apiDevGames.bind(this));
 
-        this.router.post('/dev/create/client/:gameid', this.apiDevCreateClient.bind(this));
-        this.router.post('/dev/find/client/:gameid', this.apiDevFindClient.bind(this));
-        this.router.post('/dev/update/client/images/:clientid', this.apiDevUpdateClientImages.bind(this));
-        this.router.post('/dev/update/client/bundle/:clientid', this.apiDevUpdateClientBundle.bind(this));
-        this.router.get('/dev/find/game/:gameid', this.apiDevFindGame.bind(this));
-        this.router.post('/dev/create/game', this.apiDevCreateGame.bind(this));
-        this.router.post('/dev/update/game', this.apiDevUpdateGame.bind(this));
-        this.router.post('/dev/update/game/images/:gameid', this.apiDevUpdateGameImages.bind(this));
+        this.router.post('/api/v1/dev/create/client/:gameid', this.apiDevCreateClient.bind(this));
+        this.router.post('/api/v1/dev/find/client/:gameid', this.apiDevFindClient.bind(this));
+        this.router.post('/api/v1/dev/update/client/images/:clientid', this.apiDevUpdateClientImages.bind(this));
+        this.router.post('/api/v1/dev/update/client/bundle/:clientid', this.apiDevUpdateClientBundle.bind(this));
+        this.router.get('/api/v1/dev/find/game/:gameid', this.apiDevFindGame.bind(this));
+        this.router.post('/api/v1/dev/create/game', this.apiDevCreateGame.bind(this));
+        this.router.post('/api/v1/dev/update/game', this.apiDevUpdateGame.bind(this));
+        this.router.post('/api/v1/dev/update/game/images/:gameid', this.apiDevUpdateGameImages.bind(this));
         return this.router;
     }
 

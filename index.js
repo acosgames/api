@@ -8,9 +8,9 @@ var FileStore = require('session-file-store')(session);
 const profiler = require('fsg-shared/util/Profiler')
 const { GeneralError } = require('fsg-shared/util/errorhandler');
 
-
-
-var port = process.env.PORT || 8080;
+const credutil = require('fsg-shared/util/credentials');
+const credentials = credutil();
+const PORT = process.env.PORT || credentials.platform.api.port;
 
 const app = express()
 var httpServer = http.createServer(app);
@@ -52,15 +52,20 @@ app.use(express.json());
 const SocialAuth = require('./src/api/authentication/socialauth');
 const PersonAPI = require('./src/api/person');
 const DevGameAPI = require('./src/api/devgame');
+const ServerAPI = require('./src/api/server');
+
 const social = new SocialAuth();
 const person = new PersonAPI();
 const devgame = new DevGameAPI();
+const server = new ServerAPI();
 
 app.use(social.routes());
 app.use(social.auth());
 
 app.use(person.routes());
 app.use(devgame.routes());
+app.use(server.routes());
+
 const dir = `${__dirname}/public/`;
 app.get('/iframe', (req, res, next) => {
     res.sendFile(dir + 'iframe.html');
@@ -78,7 +83,7 @@ app.use((req, res, next) => {
     res.status(400).json({ ecode: 'E_INVALID_API' });
 })
 
-httpServer.listen(process.env.PORT || port, function () {
+httpServer.listen(PORT, function () {
     var host = httpServer.address().address
     var port = httpServer.address().port
     console.log('App listening at http://%s:%s', host, port)

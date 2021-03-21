@@ -17,9 +17,9 @@ module.exports = class PersonAPI {
 
 
     routes() {
-        this.router.post('/person/create/displayname', this.apiCreateDisplayname);
+        this.router.post('/api/v1/person/create/displayname', this.apiCreateDisplayname);
 
-        this.router.get('/person/', this.apiGetProfile);
+        this.router.get('/api/v1/person/', this.apiGetProfile);
         return this.router;
     }
 
