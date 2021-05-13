@@ -90,8 +90,17 @@ module.exports = class SocialAuth {
         return router;
     }
 
+    logout(req, res) {
+        req.session.user = null;
+        req.session.destroy();
+        res.cookie('X-API-KEY', '', { maxAge: Date.now() });
+
+        res.json({ 'status': 'success' })
+    }
+
     routes() {
 
+        this.router.get('/logout', this.logout);
         this.router.get('/login/google', passport.authenticate('google', { session: false }));
         this.router.get('/oauth/google', passport.authenticate('google', { failureRedirect: '/', session: false }), this.redirect);
 

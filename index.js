@@ -46,18 +46,20 @@ app.use(session({
 
 // })
 
-app.use(cookieParser());
+app.use(cookieParser('q*npasdfAm(7_A#"AvV'));
 app.use(express.json());
 
 const SocialAuth = require('./src/api/authentication/socialauth');
 const PersonAPI = require('./src/api/person');
 const DevGameAPI = require('./src/api/devgame');
 const ServerAPI = require('./src/api/server');
+const GameAPI = require('./src/api/game');
 
 const social = new SocialAuth();
 const person = new PersonAPI();
 const devgame = new DevGameAPI();
 const server = new ServerAPI();
+const game = new GameAPI();
 
 app.use(social.routes());
 app.use(social.auth());
@@ -65,6 +67,7 @@ app.use(social.auth());
 app.use(person.routes());
 app.use(devgame.routes());
 app.use(server.routes());
+app.use(game.routes());
 
 const dir = `${__dirname}/public/`;
 app.get('/iframe', (req, res, next) => {
