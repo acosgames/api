@@ -14,14 +14,22 @@ const { genShortId } = require('fsg-shared/util/idgen');
 
 const { GeneralError } = require('fsg-shared/util/errorhandler');
 
+const DevAuth = require('./authentication/authdev');
+const devauth = new DevAuth();
 
 module.exports = class DevGameAPI {
     constructor(credentials) {
         this.credentials = credentials || credutil();
 
         this.router = new Router();
+        this.bundleRouter = new Router();
     }
 
+    bundleRoutes() {
+        this.bundleRouter.post('/api/v1/dev/update/client/bundle/', devauth.auth, this.apiDevUpdateClientBundle.bind(this));
+        this.bundleRouter.post('/api/v1/dev/update/server/bundle/', devauth.auth, this.apiDevUpdateServerBundle.bind(this));
+        return this.bundleRouter;
+    }
 
     routes() {
 
@@ -33,7 +41,7 @@ module.exports = class DevGameAPI {
         this.router.post('/api/v1/dev/create/client/:gameid', this.apiDevCreateClient.bind(this));
         this.router.post('/api/v1/dev/find/client/:gameid', this.apiDevFindClient.bind(this));
         this.router.post('/api/v1/dev/update/client/images/:clientid', this.apiDevUpdateClientImages.bind(this));
-        this.router.post('/api/v1/dev/update/client/bundle/:clientid', this.apiDevUpdateClientBundle.bind(this));
+
         this.router.get('/api/v1/dev/find/game/:gameid', this.apiDevFindGame.bind(this));
         this.router.post('/api/v1/dev/create/game', this.apiDevCreateGame.bind(this));
         this.router.post('/api/v1/dev/update/game', this.apiDevUpdateGame.bind(this));
@@ -41,22 +49,43 @@ module.exports = class DevGameAPI {
         return this.router;
     }
 
-    async apiDevUpdateClientBundle(req, res, next) {
+    async apiDevUpdateServerBundle(req, res, next) {
         try {
-            let uploadMiddleware = upload.middleware('fivesecondgames', ['text/javascript'], this.cbImageMeta, this.cbClientBundleKey);
+            let uploadMiddleware = upload.middlewarePrivate('fsg-server', ['text/javascript', 'application/javascript'], this.cbImageMeta, this.cbServerBundleKey);
             let imageMiddleware = uploadMiddleware.array('bundle', 1);
 
-            let gameid = req.params.gameid;
-            let clientid = req.params.clientid;
-            let user = req.session.user;
-
-            let clients = await devgame.findClient({ id: clientid }, user);
-            if (!clients || clients.length == 0)
+            let apikey = req.header('X-GAME-API-KEY');
+            if (!apikey) {
+                res.json({ ecode: 'E_UPLOADFAILED' });
                 return;
+            }
+            // let apikey = '6394232D38D14DB2AC5B09E329CFD00E';
 
-            let client = clients[0];
+            let game = { apikey };
+            let versions = await devgame.findGameVersions(game);
+            let gameTest = null;
 
-            req.devclient = client;
+            for (var i = 0; i < versions.length; i++) {
+                let gameVersion = versions[i];
+                if (gameVersion.published_version < gameVersion.version) {
+                    gameTest = gameVersion;
+                    break;
+                }
+            }
+
+            if (!gameTest) {
+                let game = await devgame.findGame(game);
+                gameTest = {
+                    gameid: game.gameid,
+                    version: game.version + 1,
+                    status: 0
+                }
+
+                let result = await devgame.createGameVersion(gameTest);
+                console.log(gameTest, result);
+            }
+
+            req.game = gameTest;
 
             //let deleted = await upload.deleteBundles(client);
 
@@ -68,14 +97,87 @@ module.exports = class DevGameAPI {
                     return;
                 }
 
-                let user = req.session.user;
-                let files = req.files;
-                files = files.map(v => v.key.replace(gameid + '/client/' + clientid + '/', ''));
+                // let response = await devgame.updateClientBundle(client, user, files);
+                // console.log(response);
 
-                let response = await devgame.updateClientBundle(client, user, files);
-                console.log(response);
+                // game.meta = {
+                //     files: await upload.listFiles(game.gameid)
+                // }
+                res.json(game);
+                return
+            })
+        }
+        catch (e) {
+            console.error(e);
+            next(new GeneralError("E_UPLOAD_FAILED"));
+        }
+    }
 
-                res.json(client);
+    async apiDevUpdateClientBundle(req, res, next) {
+        try {
+            let uploadMiddleware = upload.middleware('fivesecondgames', ['text/javascript', 'application/javascript'], this.cbImageMeta, this.cbClientBundleKey);
+            let imageMiddleware = uploadMiddleware.array('bundle', 1);
+
+            let apikey = req.header('X-GAME-API-KEY');
+            if (!apikey) {
+                res.json({ ecode: 'E_UPLOADFAILED' });
+                return;
+            }
+            // let apikey = '6394232D38D14DB2AC5B09E329CFD00E';
+
+            let game = { apikey };
+            let versions = await devgame.findGameVersions(game);
+            let gameTest = null;
+
+            for (var i = 0; i < versions.length; i++) {
+                let gameVersion = versions[i];
+                if (gameVersion.published_version < gameVersion.version) {
+                    gameTest = gameVersion;
+                    break;
+                }
+            }
+
+            if (!gameTest) {
+                let gameFull = await devgame.findGame(game);
+                gameTest = {
+                    gameid: gameFull.gameid,
+                    version: gameFull.version + 1,
+                    status: 0
+                }
+
+                let result = await devgame.createGameVersion(gameTest);
+                console.log(gameTest, result);
+            }
+
+            req.game = gameTest;
+
+            //let deleted = await upload.deleteBundles(client);
+
+            imageMiddleware(req, res, async function (err) {
+                if (err) {
+                    console.error(err);
+                    // An unknown error occurred when uploading.
+                    next(new GeneralError("E_UPLOAD_FAILED"));
+                    return;
+                }
+
+
+                // let files = req.files;
+                // //files = files.map(v => v.key.replace(gameid + '/client/' + version + '/', ''));
+
+                // let gameClient = {
+                //     version,
+                //     apikey: game.apikey
+                // }
+                // let updatedGame = await devgame.updateGame(gameClient)
+                // game.version = version;
+                // // let response = await devgame.updateClientBundle(client, user, files);
+                // // console.log(response);
+
+                // game.meta = {
+                //     files: await upload.listFiles(game.gameid)
+                // }
+                res.json(gameTest);
                 return
             })
         }
@@ -282,29 +384,21 @@ module.exports = class DevGameAPI {
         cb(null, key)
     }
 
-    cbClientBundleKey(req, file, cb) {
-        if (!req.session.user) {
-            let err = new GeneralError('E_USER_NOTAUTHORIZED');
-            cb(err, 'failed')
-            return;
-        }
-
-        let client = req.devclient;
+    cbServerBundleKey(req, file, cb) {
+        let game = req.game;
         var filename = file.originalname;
-        let ext = filename.split('.').pop();
+        filename = filename.replace('.js', '.' + game.version + '.js')
+        let key = game.gameid + '/' + filename;
 
-        if (filename == ext)
-            ext = 'js';
+        cb(null, key)
+    }
 
-        if (client.clientversion) {
-            client.clientversion = client.clientversion + 1;
-        } else {
-            client.clientversion = 1;
-        }
-        // filename = genShortId(4) + '.' + ext;
-        client.build_client = client.clientversion + '.' + ext;
+    cbClientBundleKey(req, file, cb) {
 
-        let key = client.gameid + '/client/' + client.id + '/' + client.build_client;
+        let game = req.game;
+        var filename = file.originalname;
+        filename = filename.replace('.js', '.' + game.version + '.js')
+        let key = game.gameid + '/client/' + filename;
 
         cb(null, key)
     }

@@ -49,7 +49,8 @@ app.use(session({
 app.use(cookieParser('q*npasdfAm(7_A#"AvV'));
 app.use(express.json());
 
-const SocialAuth = require('./src/api/authentication/socialauth');
+
+const SocialAuth = require('./src/api/authentication/authsocial');
 const PersonAPI = require('./src/api/person');
 const DevGameAPI = require('./src/api/devgame');
 const ServerAPI = require('./src/api/server');
@@ -61,6 +62,13 @@ const devgame = new DevGameAPI();
 const server = new ServerAPI();
 const game = new GameAPI();
 
+const dir = `${__dirname}/public/`;
+app.get('/iframe*', (req, res, next) => {
+    res.sendFile(dir + 'iframe.html');
+})
+
+app.use(devgame.bundleRoutes());
+
 app.use(social.routes());
 app.use(social.auth());
 
@@ -69,10 +77,7 @@ app.use(devgame.routes());
 app.use(server.routes());
 app.use(game.routes());
 
-const dir = `${__dirname}/public/`;
-app.get('/iframe', (req, res, next) => {
-    res.sendFile(dir + 'iframe.html');
-})
+
 app.use((err, req, res, next) => {
     console.log(err);
     if (err instanceof GeneralError) {
