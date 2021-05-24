@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <title>FiveSecondGames - Client Simulator</title>
+        <meta name="description" content="FiveSecondGames Client Simulator" />
+        <meta name="author" content="fsg" />
+    </head>
+    <body>
+        <div id="root"></div>
+        <script>
+            function loadJS(url) {
+                var fileref = document.createElement('script');
+                fileref.setAttribute('type', 'text/javascript');
+                fileref.setAttribute('src', url);
+                if (typeof fileref != 'undefined') document.getElementsByTagName('body')[0].appendChild(fileref);
+            }
+
+            // let path = window.location.pathname;
+            // let pathParts = path.split('/');
+            // let gameid = pathParts[2];
+            // let version = pathParts[3];
+            //let url = 'https://f000.backblazeb2.com/file/fivesecondgames/bundle.' + version + '.js';
+            let url = '/bundle.js';
+            loadJS(url);
+        </script>
+    </body>
+</html>

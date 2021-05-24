@@ -67,6 +67,19 @@ app.get('/iframe*', (req, res, next) => {
     res.sendFile(dir + 'iframe.html');
 })
 
+// const dir = `${__dirname}/public/`;
+app.get('/bundle.js', (req, res, next) => {
+    res.sendFile(dir + 'bundle.js');
+})
+
+// const dir = `${__dirname}/public/`;
+app.get('/*', (req, res, next) => {
+    if (req.path.indexOf("/api/") > -1) {
+        return next();
+    }
+    res.sendFile(dir + 'index.html');
+})
+
 app.use(devgame.bundleRoutes());
 
 app.use(social.routes());
