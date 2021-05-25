@@ -5,17 +5,17 @@
         <title>FiveSecondGames - Client Simulator</title>
         <meta name="description" content="FiveSecondGames Client Simulator" />
         <meta name="author" content="fsg" />
+        <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src f000.backblazeb2.com;" />
     </head>
     <body>
         <div id="root"></div>
         <script>
             function loadJS(url) {
                 var fileref = document.createElement('script');
-                fileref.setAttribute('type', 'text/javascript');
                 fileref.setAttribute('src', url);
-                if (typeof fileref != 'undefined') document.getElementsByTagName('body')[0].appendChild(fileref);
+                document.body.appendChild(fileref);
             }
-
+            document.domain = 'localhost';
             let path = window.location.pathname;
             let pathParts = path.split('/');
             let gameid = pathParts[2];
@@ -26,7 +26,9 @@
                 '/client/client.bundle.' +
                 version +
                 '.js';
-            loadJS(url);
+            url = 'https://f000.backblazeb2.com/file/fivesecondgames/6796538598029000704/client/client.bundle.35.js';
+            //loadJS(url);
         </script>
+        <script src="https://f000.backblazeb2.com/file/fivesecondgames/6796538598029000704/client/client.bundle.35.js"></script>
     </body>
 </html>

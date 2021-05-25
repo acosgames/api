@@ -74,7 +74,7 @@ module.exports = class DevGameAPI {
             }
 
             if (!gameTest) {
-                let game = await devgame.findGame(game);
+                game = await devgame.findGame(game);
                 gameTest = {
                     gameid: game.gameid,
                     version: game.version + 1,
@@ -115,7 +115,9 @@ module.exports = class DevGameAPI {
 
     async apiDevUpdateClientBundle(req, res, next) {
         try {
-            let uploadMiddleware = upload.middleware('fivesecondgames', ['text/javascript', 'application/javascript'], this.cbImageMeta, this.cbClientBundleKey);
+            let uploadMiddleware = upload.middleware('fivesecondgames', ['text/javascript', 'application/javascript'], this.cbImageMeta, this.cbClientBundleKey, (req, file, cb) => {
+                cb(null, 'application/javascript', file.stream);
+            });
             let imageMiddleware = uploadMiddleware.array('bundle', 1);
 
             let apikey = req.header('X-GAME-API-KEY');

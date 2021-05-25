@@ -21,14 +21,14 @@ app.use((req, res, next) => {
     next();
 })
 
-app.use(cors({
-    origin: [
-        'http://localhost:3000', 'http://localhost:8080', 'http://localhost:8000', '*'
-    ],
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-API-KEY'],
-    credentials: true
-}));
+// app.use(cors({
+//     origin: [
+//         'http://localhost:3000', 'http://localhost:8080', 'http://localhost:8000', '*'
+//     ],
+//     methods: ['GET', 'POST', 'PUT', 'DELETE'],
+//     allowedHeaders: ['Content-Type', 'Authorization', 'X-API-KEY'],
+//     credentials: true
+// }));
 
 app.use(session({
     store: new FileStore(fileStoreOptions),
