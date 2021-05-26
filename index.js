@@ -46,7 +46,7 @@ app.use(session({
 
 // })
 
-app.use(cookieParser('q*npasdfAm(7_A#"AvV'));
+app.use(cookieParser('q*npasdfAm(7_A#"AvV', { 'httpOnly': true }));
 app.use(express.json());
 
 
@@ -61,6 +61,8 @@ const person = new PersonAPI();
 const devgame = new DevGameAPI();
 const server = new ServerAPI();
 const game = new GameAPI();
+
+app.use(social.routes());
 
 const dir = `${__dirname}/public/`;
 app.get('/iframe*', (req, res, next) => {
@@ -82,7 +84,7 @@ app.get('/*', (req, res, next) => {
 
 app.use(devgame.bundleRoutes());
 
-app.use(social.routes());
+
 app.use(social.auth());
 
 app.use(person.routes());

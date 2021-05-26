@@ -93,7 +93,7 @@ module.exports = class SocialAuth {
     logout(req, res) {
         req.session.user = null;
         req.session.destroy();
-        res.cookie('X-API-KEY', '', { maxAge: Date.now() });
+        res.cookie('X-API-KEY', '', { maxAge: Date.now(), httpOnly: true });
 
         res.json({ 'status': 'success' })
     }
@@ -116,7 +116,7 @@ module.exports = class SocialAuth {
 
     async redirect(req, res) {
         if (!req.user)
-            res.redirect('http://localhost:3000')
+            res.redirect('http://localhost:8000')
 
 
         // console.log(req.session.passport);
@@ -132,9 +132,9 @@ module.exports = class SocialAuth {
             req.session.user = dbUser;
 
             if (!dbUser.displayname || dbUser.displayname.length == 0 || dbUser.displayname == dbUser.apikey) {
-                res.cookie('X-API-KEY', dbUser.apikey)
+                res.cookie('X-API-KEY', dbUser.apikey, { httpOnly: true })
                 //res.setHeader('Set-Cookie', 'X-API-KEY=' + dbUser.apikey + '; HttpOnly');
-                res.redirect('http://localhost:3000/player/create');
+                res.redirect('http://localhost:8000/player/create');
                 return;
             }
 
@@ -142,13 +142,13 @@ module.exports = class SocialAuth {
         }
         catch (e) {
             console.error(e);
-            res.redirect('http://localhost:3000/login/');
+            res.redirect('http://localhost:8000/login/');
             return;
         }
 
-        res.cookie('X-API-KEY', req.session.user.apikey)
+        res.cookie('X-API-KEY', req.session.user.apikey, { httpOnly: true })
         //res.setHeader('Set-Cookie', 'X-API-KEY=' + dbUser.apikey + '; HttpOnly');
-        res.redirect('http://localhost:3000/games')
+        res.redirect('http://localhost:8000/games')
     }
 
     getDomain() {
