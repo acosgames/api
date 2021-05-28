@@ -16,18 +16,18 @@
                 document.body.appendChild(fileref);
             }
             // document.domain = 'localhost';
-            let path = window.location.pathname;
-            let pathParts = path.split('/');
-            let gameid = pathParts[2];
-            let version = pathParts[3];
-            let url =
-                'https://f000.backblazeb2.com/file/fivesecondgames/' +
-                gameid +
-                '/client/client.bundle.' +
-                version +
-                '.js';
-            url = 'https://f000.backblazeb2.com/file/fivesecondgames/6796538598029000704/client/client.bundle.35.js';
-            //loadJS(url);
+            // let path = window.location.pathname;
+            // let pathParts = path.split('/');
+            // let gameid = pathParts[2];
+            // let version = pathParts[3];
+            // let url =
+            //     'https://f000.backblazeb2.com/file/fivesecondgames/' +
+            //     gameid +
+            //     '/client/client.bundle.' +
+            //     version +
+            //     '.js';
+            let url = '6796538598029000704/client/client.bundle.35.js';
+            loadJS(url);
         </script>
         <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script> -->
         <script>
@@ -36,9 +36,9 @@
             // });
 
             // console.log(document.cookie);
-            alert('hi');
+            // alert('hi');
             console.log('hello', document);
         </script>
-        <script src="https://f000.backblazeb2.com/file/fivesecondgames/6796538598029000704/client/client.bundle.35.js"></script>
+        <!-- <script src="https://f000.backblazeb2.com/file/fivesecondgames/6796538598029000704/client/client.bundle.35.js"></script> -->
     </body>
 </html>
