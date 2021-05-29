@@ -115,8 +115,8 @@ module.exports = class DevGameAPI {
 
     async apiDevUpdateClientBundle(req, res, next) {
         try {
-            let uploadMiddleware = upload.middleware('fivesecondgames', ['text/javascript', 'application/javascript'], this.cbImageMeta, this.cbClientBundleKey, (req, file, cb) => {
-                cb(null, 'text/plain', file.stream);
+            let uploadMiddleware = upload.middlewareTransform('fivesecondgames', ['text/javascript', 'application/javascript'], this.cbImageMeta, this.cbClientBundleKey, (req, file, cb) => {
+                cb(null, 'text/html', file.stream);
             });
             let imageMiddleware = uploadMiddleware.array('bundle', 1);
 
