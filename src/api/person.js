@@ -30,6 +30,10 @@ module.exports = class PersonAPI {
             if (!sessionUser.id) {
                 throw new GeneralError('E_USER_NOTAUTHORIZED');
             }
+            if (sessionUser) {
+                res.json(sessionUser);
+                return;
+            }
             user = await persons.findUser({ id: sessionUser.id });
         }
         catch (e) {
