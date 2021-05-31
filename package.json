@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon --inspect=10001 --watch . --watch ../fsg-shared/ --ignore ./sessions/ index.js",
-    "dev-gitwebhook": "nodemon --inspect=10002 --watch . --watch ../fsg-shared/ --ignore ./sessions/ gitwebhook.js",
+    "start": "./node_modules/.bin/nodemon --inspect=10001 --watch . --watch ../fsg-shared/ --ignore ./sessions/ --ignore ./public/ index.js",
+    "dev-gitwebhook": "./node_modules/.bin/nodemon --inspect=10002 --watch . --watch ../fsg-shared/ --ignore ./sessions/ gitwebhook.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
