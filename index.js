@@ -17,7 +17,7 @@ var httpServer = http.createServer(app);
 var fileStoreOptions = {};
 
 app.use((req, res, next) => {
-    //console.log('test');
+    //console.log('test');  
     next();
 })
 
