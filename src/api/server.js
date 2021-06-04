@@ -15,10 +15,36 @@ module.exports = class ServerAPI {
 
     routes() {
         this.router.post('/api/v1/server/register', this.apiServerRegister);
+        this.router.get('/api/v1/server/:zone/:type', this.apiFindServerByType);
 
         return this.router;
     }
 
+    async apiFindServerByType(req, res, next) {
+        let params = null;
+        try {
+            let sessionUser = req.session.user;
+            if (!sessionUser.id) {
+                throw new GeneralError('E_USER_NOTAUTHORIZED');
+            }
+
+            let zone = req.params.zone || 0;
+            let type = req.params.type;
+            if (!type) {
+                throw new GeneralError("E_INVALID_SERVERTYPE");
+            }
+
+            let servers = await remote.findServersByType(zone, type);
+            if (!servers) {
+                throw new GeneralError('E_SERVER_INVALID');
+            }
+            res.json(servers);
+            return;
+        }
+        catch (e) {
+            next(e);
+        }
+    }
 
     async apiServerRegister(req, res, next) {
         let params = null;
