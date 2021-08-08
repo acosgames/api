@@ -61,38 +61,9 @@ module.exports = class DevGameAPI {
                 return;
             }
             // let apikey = '6394232D38D14DB2AC5B09E329CFD00E';
-
-            let game = { apikey };
-            let versions = await devgame.findGameVersions(game);
-            let gameTest = null;
-
-            for (var i = 0; i < versions.length; i++) {
-                let gameVersion = versions[i];
-                if (gameVersion.published_version < gameVersion.version) {
-                    gameTest = gameVersion;
-                    break;
-                }
-            }
-
-            if (!gameTest) {
-                game = await devgame.findGame(game);
-                gameTest = {
-                    gameid: game.gameid,
-                    version: game.version + 1,
-                    db: true,
-                    status: 0
-                }
-
-                let result = await devgame.createGameVersion(gameTest);
-                console.log(gameTest, result);
-            } else {
-                let result = await devgame.updateGameVersion(gameTest);
-                console.log(gameTest, result);
-            }
+            let gameTest = await this.createOrUpdateGameVersion(apikey, true);
 
             req.game = gameTest;
-
-            //let deleted = await upload.deleteBundles(client);
 
             imageMiddleware(req, res, async function (err) {
                 if (err) {
@@ -101,14 +72,7 @@ module.exports = class DevGameAPI {
                     next(new GeneralError("E_UPLOAD_FAILED"));
                     return;
                 }
-
-                // let response = await devgame.updateClientBundle(client, user, files);
-                // console.log(response);
-
-                // game.meta = {
-                //     files: await upload.listFiles(game.gameid)
-                // }
-                res.json(game);
+                res.json(gameTest);
                 return
             })
         }
@@ -128,35 +92,10 @@ module.exports = class DevGameAPI {
                 res.json({ ecode: 'E_UPLOADFAILED' });
                 return;
             }
+
             // let apikey = '6394232D38D14DB2AC5B09E329CFD00E';
-
-            let game = { apikey };
-            let versions = await devgame.findGameVersions(game);
-            let gameTest = null;
-
-            for (var i = 0; i < versions.length; i++) {
-                let gameVersion = versions[i];
-                if (gameVersion.published_version < gameVersion.version) {
-                    gameTest = gameVersion;
-                    break;
-                }
-            }
-
-            if (!gameTest) {
-                game = await devgame.findGame(game);
-                gameTest = {
-                    gameid: game.gameid,
-                    version: game.version + 1,
-                    status: 0
-                }
-
-                let result = await devgame.createGameVersion(gameTest);
-                console.log(gameTest, result);
-            }
-
+            let gameTest = await this.createOrUpdateGameVersion(apikey);
             req.game = gameTest;
-
-            //let deleted = await upload.deleteBundles(client);
 
             imageMiddleware(req, res, async function (err) {
                 if (err) {
@@ -165,14 +104,7 @@ module.exports = class DevGameAPI {
                     next(new GeneralError("E_UPLOAD_FAILED"));
                     return;
                 }
-
-                // let response = await devgame.updateClientBundle(client, user, files);
-                // console.log(response);
-
-                // game.meta = {
-                //     files: await upload.listFiles(game.gameid)
-                // }
-                res.json(game);
+                res.json(gameTest);
                 return
             })
         }
@@ -196,33 +128,9 @@ module.exports = class DevGameAPI {
             }
             // let apikey = '6394232D38D14DB2AC5B09E329CFD00E';
 
-            let game = { apikey };
-            let versions = await devgame.findGameVersions(game);
-            let gameTest = null;
-
-            for (var i = 0; i < versions.length; i++) {
-                let gameVersion = versions[i];
-                if (gameVersion.published_version < gameVersion.version) {
-                    gameTest = gameVersion;
-                    break;
-                }
-            }
-
-            if (!gameTest) {
-                let gameFull = await devgame.findGame(game);
-                gameTest = {
-                    gameid: gameFull.gameid,
-                    version: gameFull.version + 1,
-                    status: 0
-                }
-
-                let result = await devgame.createGameVersion(gameTest);
-                console.log(gameTest, result);
-            }
+            let gameTest = await this.createOrUpdateGameVersion(apikey);
 
             req.game = gameTest;
-
-            //let deleted = await upload.deleteBundles(client);
 
             imageMiddleware(req, res, async function (err) {
                 if (err) {
@@ -232,22 +140,6 @@ module.exports = class DevGameAPI {
                     return;
                 }
 
-
-                // let files = req.files;
-                // //files = files.map(v => v.key.replace(gameid + '/client/' + version + '/', ''));
-
-                // let gameClient = {
-                //     version,
-                //     apikey: game.apikey
-                // }
-                // let updatedGame = await devgame.updateGame(gameClient)
-                // game.version = version;
-                // // let response = await devgame.updateClientBundle(client, user, files);
-                // // console.log(response);
-
-                // game.meta = {
-                //     files: await upload.listFiles(game.gameid)
-                // }
                 res.json(gameTest);
                 return
             })
@@ -256,6 +148,41 @@ module.exports = class DevGameAPI {
             console.error(e);
             next(new GeneralError("E_UPLOAD_FAILED"));
         }
+    }
+
+    async createOrUpdateGameVersion(apikey, hasDB) {
+        let game = { apikey };
+        let versions = await devgame.findGameVersions(game);
+        let gameTest = null;
+
+        //check if we have a test version (will be higher version than published)
+        for (var i = 0; i < versions.length; i++) {
+            let gameVersion = versions[i];
+            if (gameVersion.published_version < gameVersion.version) {
+                gameTest = gameVersion;
+                break;
+            }
+        }
+
+        //no test version exists, create one
+        if (!gameTest) {
+            let gameFull = await devgame.findGame(game);
+            gameTest = {
+                gameid: gameFull.gameid,
+                version: gameFull.version + 1,
+                status: 2
+            }
+
+            gameTest = await devgame.createGameVersion(gameTest);
+            console.log(gameTest);
+        }
+
+        if (hasDB) {
+            gameTest = await devgame.addDBtoGameVersion(gameTest);
+            console.log(gameTest);
+        }
+
+        return gameTest;
     }
 
     async apiDevGames(req, res, next) {
