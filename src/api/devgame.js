@@ -174,7 +174,11 @@ module.exports = class DevGameAPI {
             }
 
             gameTest = await devgame.createGameVersion(gameTest);
-            console.log(gameTest);
+            console.log("Created DevGame: ", gameTest);
+        }
+        else {
+            gameTest = await devgame.updateGameVersion(gameTest);
+            console.log("Updated DevGame: ", gameTest);
         }
 
         if (hasDB) {
