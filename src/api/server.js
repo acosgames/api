@@ -23,9 +23,11 @@ module.exports = class ServerAPI {
     async apiFindServerByType(req, res, next) {
         let params = null;
         try {
-            let sessionUser = req.session.user;
-            if (!sessionUser.id) {
-                throw new GeneralError('E_USER_NOTAUTHORIZED');
+
+            let apikey = req.header('X-PLATFORM-API-KEY');
+            if (!apikey) {
+                res.json({ ecode: 'E_NOTAUTHORIZED' });
+                return;
             }
 
             let zone = req.params.zone || 0;
@@ -49,9 +51,10 @@ module.exports = class ServerAPI {
     async apiServerRegister(req, res, next) {
         let params = null;
         try {
-            let sessionUser = req.session.user;
-            if (!sessionUser.id) {
-                throw new GeneralError('E_USER_NOTAUTHORIZED');
+            let apikey = req.header('X-PLATFORM-API-KEY');
+            if (!apikey) {
+                res.json({ ecode: 'E_NOTAUTHORIZED' });
+                return;
             }
 
             params = req.body;

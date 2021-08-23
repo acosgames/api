@@ -10,8 +10,9 @@ const mysql = new MySQL();
 
 const PersonService = require('fsg-shared/services/person');
 const persons = new PersonService();
+const fs = require('fs');
 
-
+const JWT_PRIVATE_KEY = fs.readFileSync('./src/credentials/jwtRS256.key');
 module.exports = class SocialAuth {
     constructor(credentials) {
         this.credentials = credentials || credutil();
@@ -19,6 +20,7 @@ module.exports = class SocialAuth {
         this.google = new GoogleAuth(credentials);
         this.microsoft = new MicrosoftAuth(credentials);
         this.github = new GithubAuth(credentials);
+
 
         this.router = new Router();
         this.initialize();
@@ -42,48 +44,29 @@ module.exports = class SocialAuth {
     auth() {
         let router = new Router();
         router.use(async (req, res, next) => {
-            //let requestUserid = req.header('X-USER-ID');
 
-            let user;
-            if (req.session && req.session.user) {
-                user = req.session.user;
+            let jwtToken = req.cookies['X-API-KEY'];
+            if (jwtToken == 'undefined' || !jwtToken) {
+                jwtToken = req.header('X-API-KEY');
+                if (!jwtToken) {
+                    res.json({ ecode: 'E_USER_NOTAUTHORIZED' });
+                    return;
+                }
             }
 
-            if (!user) {
-                user = {};
-                let apikey = req.cookies['X-API-KEY'];
-                if (apikey == 'undefined' || !apikey) {
-                    apikey = req.header('X-API-KEY');
-                    if (!apikey) {
-                        res.json({ ecode: 'E_USER_NOTAUTHORIZED' });
-                        return;
-                    }
-
-                }
-                user.apikey = apikey;
-
-                user = await persons.findUser(user);
+            try {
+                let user = await persons.decodeUserToken(jwtToken);
                 if (!user) {
                     res.json({ ecode: 'E_USER_NOTAUTHORIZED' });
                     return;
                 }
 
-                user.auth = true;
-                req.session.user = user;
-                req.session.prevUrl = req.originalUrl;
-
-                next();
-                return;
+                req.user = user;
             }
-
-            if (!user.auth) {
+            catch (e) {
                 res.json({ ecode: 'E_USER_NOTAUTHORIZED' });
                 return;
             }
-
-            user.auth = true;
-            req.session.user = user;
-            req.session.prevUrl = req.originalUrl;
 
             next();
         });
@@ -128,27 +111,39 @@ module.exports = class SocialAuth {
                 throw { ecode: "E_INVALID_USER_CREATE", info: { dbUser, user } };
             }
 
-            dbUser.auth = true;
-            req.session.user = dbUser;
+            // dbUser.auth = true;
+            // req.session.user = dbUser;
+            console.log(dbUser);
+            let tokenUser = {
+                id: dbUser.id,
+                shortid: dbUser.shortid,
+                displayname: dbUser.displayname,
+                email: dbUser.email,
+                isdev: dbUser.isdev,
+                github: dbUser.github
+            }
+            let token = await persons.encodeUserToken(tokenUser, JWT_PRIVATE_KEY);
+            req.user = dbUser;
+
+
+            res.cookie('X-API-KEY', token, { httpOnly: true })
 
             if (!dbUser.displayname || dbUser.displayname.length == 0 || dbUser.displayname == dbUser.apikey) {
-                res.cookie('X-API-KEY', dbUser.apikey, { httpOnly: true })
                 //res.setHeader('Set-Cookie', 'X-API-KEY=' + dbUser.apikey + '; HttpOnly');
                 res.redirect('http://localhost:8000/player/create');
                 return;
             }
 
-            console.log(dbUser);
+            //res.setHeader('Set-Cookie', 'X-API-KEY=' + dbUser.apikey + '; HttpOnly');
+            res.redirect('http://localhost:8000/games')
+            return;
         }
         catch (e) {
             console.error(e);
-            res.redirect('http://localhost:8000/login/');
-            return;
+
         }
 
-        res.cookie('X-API-KEY', req.session.user.apikey, { httpOnly: true })
-        //res.setHeader('Set-Cookie', 'X-API-KEY=' + dbUser.apikey + '; HttpOnly');
-        res.redirect('http://localhost:8000/games')
+        res.redirect('http://localhost:8000/login/');
     }
 
     getDomain() {

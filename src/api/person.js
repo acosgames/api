@@ -24,25 +24,18 @@ module.exports = class PersonAPI {
     }
 
     async apiGetProfile(req, res, next) {
-        let user = null;
         try {
-            let sessionUser = req.session.user;
-            if (!sessionUser.id) {
+            if (!req.user) {
                 throw new GeneralError('E_USER_NOTAUTHORIZED');
             }
-            if (sessionUser) {
-                res.json(sessionUser);
-                return;
-            }
-            user = await persons.findUser({ id: sessionUser.id });
+
+            req.user.token = req.cookies['X-API-KEY'];
+            res.json(req.user);
         }
         catch (e) {
             next(e);
             return;
         }
-
-        res.json(user);
-        return;
     }
 
     async apiCreateDisplayname(req, res, next) {
