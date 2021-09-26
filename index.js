@@ -5,7 +5,7 @@ const cookieParser = require('cookie-parser');
 const session = require('express-session');
 // const MemoryStore = require('memorystore')(session)
 var FileStore = require('session-file-store')(session);
-const profiler = require('fsg-shared/util/Profiler')
+const profiler = require('fsg-shared/util/profiler')
 const { GeneralError } = require('fsg-shared/util/errorhandler');
 
 const credutil = require('fsg-shared/util/credentials');
@@ -109,4 +109,10 @@ httpServer.listen(PORT, function () {
     var host = httpServer.address().address
     var port = httpServer.address().port
     console.log('App listening at http://%s:%s', host, port)
+});
+
+
+process.on('SIGINT', function () {
+    console.log('SIGINT');
+    process.exit();
 });
