@@ -84,12 +84,13 @@ app.get('/*', (req, res, next) => {
 
 app.use(devgame.bundleRoutes());
 app.use(server.routes());
+app.use(game.routes());
 
 app.use(social.auth());
 
 app.use(person.routes());
 app.use(devgame.routes());
-app.use(game.routes());
+
 
 
 app.use((err, req, res, next) => {
