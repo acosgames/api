@@ -218,7 +218,7 @@ module.exports = class DevGameAPI {
             if (!game) {
                 throw new GeneralError("E_DEVGAME_MISSING");
             }
-            let sessionUser = req.session.user;
+            //let sessionUser = req.session.user;
 
             let pushedGame = await devgame.findGame(game);
             if (!pushedGame) {
@@ -580,9 +580,7 @@ module.exports = class DevGameAPI {
             if (!game) {
                 throw new GeneralError("E_MISSING_DEVGAME");
             }
-            let sessionUser = req.session.user;
-
-            let pushedGame = await devgame.createGame(game, sessionUser);
+            let pushedGame = await devgame.createGame(game, req.user);
             if (!pushedGame) {
                 throw new GeneralError("E_CREATEFAILED_GAME");
             }
