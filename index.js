@@ -11,6 +11,7 @@ const { GeneralError } = require('fsg-shared/util/errorhandler');
 const credutil = require('fsg-shared/util/credentials');
 const credentials = credutil();
 const PORT = process.env.PORT || credentials.platform.api.port;
+const path = require('path');
 
 const app = express()
 var httpServer = http.createServer(app);
@@ -62,6 +63,8 @@ const devgame = new DevGameAPI();
 const server = new ServerAPI();
 const game = new GameAPI();
 
+app.use('/assets', express.static(path.join(__dirname, 'public')));
+
 app.use(social.routes());
 
 const dir = `${__dirname}/public/`;
@@ -74,13 +77,8 @@ app.get('/bundle.js', (req, res, next) => {
     res.sendFile(dir + 'bundle.js');
 })
 
-// const dir = `${__dirname}/public/`;
-app.get('/*', (req, res, next) => {
-    if (req.path.indexOf("/api/") > -1) {
-        return next();
-    }
-    res.sendFile(dir + 'index.html');
-})
+
+
 
 app.use(devgame.bundleRoutes());
 app.use(server.routes());
@@ -91,6 +89,14 @@ app.use(social.auth());
 app.use(person.routes());
 app.use(devgame.routes());
 
+
+// const dir = `${__dirname}/public/`;
+app.use('/*', (req, res, next) => {
+    if (req.path.indexOf("/api/") > -1) {
+        return next();
+    }
+    res.sendFile(dir + 'index.html');
+})
 
 
 app.use((err, req, res, next) => {
