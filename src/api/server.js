@@ -13,9 +13,10 @@ module.exports = class ServerAPI {
     }
 
 
-    routes() {
-        this.router.post('/api/v1/server/register', this.apiServerRegister);
-        this.router.get('/api/v1/server/:zone/:type', this.apiFindServerByType);
+    routes(middleware) {
+        middleware = middleware || ((req, res, next) => { next() })
+        this.router.post('/api/v1/server/register', middleware, this.apiServerRegister);
+        this.router.get('/api/v1/server/:zone/:type', middleware, this.apiFindServerByType);
 
         return this.router;
     }

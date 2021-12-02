@@ -84,20 +84,20 @@ app.use(devgame.bundleRoutes());
 app.use(server.routes());
 app.use(game.routes());
 
-app.use(social.auth());
-
-app.use(person.routes());
-app.use(devgame.routes());
-
-
 // const dir = `${__dirname}/public/`;
+// app.use(social.auth());
+
+let socialAuthentication = social.auth();
+
+app.use(person.routes(socialAuthentication));
+app.use(devgame.routes(socialAuthentication));
+
 app.use('/*', (req, res, next) => {
     if (req.path.indexOf("/api/") > -1) {
         return next();
     }
     res.sendFile(dir + 'index.html');
 })
-
 
 app.use((err, req, res, next) => {
     console.log(err);

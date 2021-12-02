@@ -42,8 +42,7 @@ module.exports = class SocialAuth {
     }
 
     auth() {
-        let router = new Router();
-        router.use(async (req, res, next) => {
+        return (async (req, res, next) => {
 
             let jwtToken = req.cookies['X-API-KEY'];
             if (jwtToken == 'undefined' || !jwtToken) {
@@ -70,7 +69,6 @@ module.exports = class SocialAuth {
 
             next();
         });
-        return router;
     }
 
     logout(req, res) {

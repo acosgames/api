@@ -33,21 +33,22 @@ module.exports = class DevGameAPI {
         return this.bundleRouter;
     }
 
-    routes() {
+    routes(middleware) {
+        middleware = middleware || ((req, res, next) => { next() })
 
-        this.router.post('/api/v1/dev/create/server/:gameid', this.apiDevCreateServer.bind(this));
-        this.router.post('/api/v1/dev/find/server/:gameid', this.apiDevFindServer.bind(this));
+        // this.router.post('/api/v1/dev/create/server/:gameid', middleware, this.apiDevCreateServer.bind(this));
+        // this.router.post('/api/v1/dev/find/server/:gameid', middleware, this.apiDevFindServer.bind(this));
 
-        this.router.get('/api/v1/dev/games/:userid', this.apiDevGames.bind(this));
+        this.router.get('/api/v1/dev/games/:userid', middleware, this.apiDevGames.bind(this));
 
-        this.router.post('/api/v1/dev/create/client/:gameid', this.apiDevCreateClient.bind(this));
-        this.router.post('/api/v1/dev/find/client/:gameid', this.apiDevFindClient.bind(this));
-        this.router.post('/api/v1/dev/update/client/images/:clientid', this.apiDevUpdateClientImages.bind(this));
+        // this.router.post('/api/v1/dev/create/client/:gameid', middleware, this.apiDevCreateClient.bind(this));
+        // this.router.post('/api/v1/dev/find/client/:gameid', middleware, this.apiDevFindClient.bind(this));
+        // this.router.post('/api/v1/dev/update/client/images/:clientid', middleware, this.apiDevUpdateClientImages.bind(this));
 
-        this.router.get('/api/v1/dev/find/game/:gameid', this.apiDevFindGame.bind(this));
-        this.router.post('/api/v1/dev/create/game', this.apiDevCreateGame.bind(this));
-        this.router.post('/api/v1/dev/update/game', this.apiDevUpdateGame.bind(this));
-        this.router.post('/api/v1/dev/update/game/images/:gameid', this.apiDevUpdateGameImages.bind(this));
+        this.router.get('/api/v1/dev/find/game/:gameid', middleware, this.apiDevFindGame.bind(this));
+        this.router.post('/api/v1/dev/create/game', middleware, this.apiDevCreateGame.bind(this));
+        this.router.post('/api/v1/dev/update/game', middleware, this.apiDevUpdateGame.bind(this));
+        this.router.post('/api/v1/dev/update/game/images/:gameid', middleware, this.apiDevUpdateGameImages.bind(this));
         return this.router;
     }
 

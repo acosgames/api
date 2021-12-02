@@ -9,6 +9,9 @@ const { GeneralError } = require('fsg-shared/util/errorhandler');
 const GameService = require('fsg-shared/services/game');
 const game = new GameService();
 
+const storage = require('./storage');
+
+
 module.exports = class GameAPI {
     constructor(credentials) {
         this.credentials = credentials || credutil();
@@ -16,10 +19,10 @@ module.exports = class GameAPI {
     }
 
 
-    routes() {
-
-        this.router.get('/api/v1/games', this.apiFindGames.bind(this));
-        this.router.get('/api/v1/game/:game_slug', this.apiFindGame.bind(this));
+    routes(middleware) {
+        middleware = middleware || ((req, res, next) => { next() })
+        this.router.get('/api/v1/games', middleware, this.apiFindGames.bind(this));
+        this.router.get('/api/v1/game/:game_slug', middleware, this.apiFindGame.bind(this));
 
         return this.router;
     }
@@ -27,8 +30,11 @@ module.exports = class GameAPI {
     async apiFindGames(req, res) {
         let games = null;
         try {
-
-            games = await game.findGames();
+            games = storage.getGameList();
+            if (!games) {
+                games = await game.findGames();
+                storage.setGameList(games);
+            }
         }
         catch (e) {
             next(e);
