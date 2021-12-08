@@ -287,9 +287,9 @@ module.exports = class DevGameAPI {
             if (!game) {
                 throw new GeneralError("E_DEVGAME_MISSING");
             }
-            //let sessionUser = req.session.user;
+            let sessionUser = req.user;
 
-            let pushedGame = await devgame.findGame(game);
+            let pushedGame = await devgame.findGame(game, sessionUser);
             if (!pushedGame) {
                 throw new GeneralError("E_DEVGAME_NOTFOUND");
             }
