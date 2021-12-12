@@ -558,9 +558,9 @@ module.exports = class DevGameAPI {
             let imageMiddleware = uploadMiddleware.array('images', 1);
 
             let gameid = req.params.gameid;
-            let user = req.session.user;
+            let user = req.user;
 
-            let game = await devgame.findGame({ gameid });
+            let game = await devgame.findGame({ gameid }, user);
 
             let deleted = await upload.deletePreviews(game);
 
