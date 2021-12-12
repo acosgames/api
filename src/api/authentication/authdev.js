@@ -18,6 +18,11 @@ module.exports = class DevAuth {
             return;
         }
 
+        let comment = apikey.indexOf('.');
+        if (comment > -1) {
+            apikey = apikey.substr(comment + 1);
+        }
+
         let game = { apikey };
         game = await devgame.findGame(game);
         if (!game) {
