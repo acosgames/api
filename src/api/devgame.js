@@ -14,6 +14,8 @@ const { genShortId } = require('fsg-shared/util/idgen');
 
 const { GeneralError } = require('fsg-shared/util/errorhandler');
 
+const gh = require('fsg-shared/services/github');
+
 const DevAuth = require('./authentication/authdev');
 const devauth = new DevAuth();
 
@@ -39,6 +41,8 @@ module.exports = class DevGameAPI {
         // this.router.post('/api/v1/dev/create/server/:gameid', middleware, this.apiDevCreateServer.bind(this));
         // this.router.post('/api/v1/dev/find/server/:gameid', middleware, this.apiDevFindServer.bind(this));
 
+        this.router.post('/api/v1/dev/invite/github', middleware, this.apiInviteGithub.bind(this));
+
         this.router.get('/api/v1/dev/games/:userid', middleware, this.apiDevGames.bind(this));
 
         // this.router.post('/api/v1/dev/create/client/:gameid', middleware, this.apiDevCreateClient.bind(this));
@@ -50,6 +54,21 @@ module.exports = class DevGameAPI {
         this.router.post('/api/v1/dev/update/game', middleware, this.apiDevUpdateGame.bind(this));
         this.router.post('/api/v1/dev/update/game/images/:gameid', middleware, this.apiDevUpdateGameImages.bind(this));
         return this.router;
+    }
+
+    async apiInviteGithub(req, res, next) {
+        try {
+            let user = req.user;
+
+            let success = await devgame.inviteToGithub(user);
+            if (success) {
+                res.json({ 'status': 'success' });
+            }
+        }
+        catch (e) {
+            console.error(e);
+            next(new GeneralError("E_INVITE_GITHUB_FAILED"));
+        }
     }
 
     async apiDevUpdateGameBundle(req, res, next) {

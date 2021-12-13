@@ -4,6 +4,7 @@ const { Router } = require('express');
 const GoogleAuth = require('./google');
 const MicrosoftAuth = require('./microsoft');
 const GithubAuth = require('./github');
+const FacebookAuth = require('./facebook');
 
 const MySQL = require('fsg-shared/services/mysql.js');
 const mysql = new MySQL();
@@ -20,7 +21,7 @@ module.exports = class SocialAuth {
         this.google = new GoogleAuth(credentials);
         this.microsoft = new MicrosoftAuth(credentials);
         this.github = new GithubAuth(credentials);
-
+        this.facebook = new FacebookAuth(credentials);
 
         this.router = new Router();
         this.initialize();
@@ -31,6 +32,7 @@ module.exports = class SocialAuth {
         passport.use(this.google.strategy())
         passport.use(this.microsoft.strategy());
         passport.use(this.github.strategy());
+        passport.use(this.facebook.strategy());
 
         passport.serializeUser(function (user, done) {
             done(null, user);
@@ -81,12 +83,17 @@ module.exports = class SocialAuth {
 
     routes() {
 
+
         this.router.get('/logout', this.logout);
         this.router.get('/login/google', passport.authenticate('google', { session: false }));
         this.router.get('/oauth/google', passport.authenticate('google', { failureRedirect: '/', session: false }), this.redirect);
 
         this.router.get('/login/microsoft', passport.authenticate('microsoft', { session: false }));
         this.router.get('/oauth/microsoft', passport.authenticate('microsoft', { failureRedirect: '/', session: false }), this.redirect);
+
+        this.router.get('/login/facebook', passport.authenticate('facebook', { session: false }));
+        this.router.get('/oauth/facebook', passport.authenticate('facebook', { failureRedirect: '/', session: false }), this.redirect);
+
 
         this.router.get('/login/github', passport.authenticate('github', { session: false }));
         this.router.get('/oauth/github', passport.authenticate('github', { failureRedirect: '/', session: false }), this.redirect);
@@ -132,8 +139,13 @@ module.exports = class SocialAuth {
                 return;
             }
 
+            if (dbUser.isdev) {
+                res.redirect('http://localhost:8000/dev');
+                return;
+            }
+
             //res.setHeader('Set-Cookie', 'X-API-KEY=' + dbUser.apikey + '; HttpOnly');
-            res.redirect('http://localhost:8000/games')
+            res.redirect('http://localhost:8000/')
             return;
         }
         catch (e) {

@@ -7,6 +7,8 @@ const mysql = new MySQL();
 const PersonService = require('fsg-shared/services/person');
 const persons = new PersonService();
 
+const fs = require('fs');
+const JWT_PRIVATE_KEY = fs.readFileSync('./src/credentials/jwtRS256.key');
 
 module.exports = class PersonAPI {
     constructor(credentials) {
@@ -20,7 +22,12 @@ module.exports = class PersonAPI {
         middleware = middleware || ((req, res, next) => { next() })
         this.router.post('/api/v1/person/create/displayname', middleware, this.apiCreateDisplayname);
 
+
+
         this.router.get('/api/v1/person/', middleware, this.apiGetProfile);
+
+
+
         return this.router;
     }
 
@@ -43,14 +50,38 @@ module.exports = class PersonAPI {
         let user = req.body;
 
         try {
+
+
             if (!user || !user.displayname) {
                 res.json({ ecode: "E_MISSING_DISPLAYNAME" });
                 return;
             }
-            let sessionUser = req.session.user;
+
+            if (user && user.displayname) {
+                user.displayname = user.displayname.replace(/[^A-Za-z0-9\_]/ig, '');
+
+                if (user.displayname.length < 3) {
+                    res.json({ ecode: "E_DISPLAYNAME_TOOSHORT" });
+                    return;
+                }
+            }
+
+            let sessionUser = req.user;
             user.id = sessionUser.id;
             user.displayname = user.displayname;
             user = await persons.createDisplayName(user);
+
+            let tokenUser = {
+                id: user.id,
+                shortid: sessionUser.shortid,
+                displayname: user.displayname,
+                email: sessionUser.email,
+                isdev: sessionUser.isdev,
+                github: sessionUser.github
+            }
+            let token = await persons.encodeUserToken(tokenUser, JWT_PRIVATE_KEY);
+
+            res.cookie('X-API-KEY', token, { httpOnly: true })
         }
         catch (e) {
             next(e);
