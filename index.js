@@ -31,16 +31,16 @@ app.use((req, res, next) => {
 //     credentials: true
 // }));
 
-app.use(session({
-    store: new FileStore(fileStoreOptions),
-    // store: new MemoryStore({
-    //     checkPeriod: 86400000 // prune expired entries every 24h
-    // }),
-    secret: 'alksdjflkasjdflkasjasdfasdfsa1234',
-    resave: false,
-    saveUninitialized: false,
-    cookie: { secure: false }
-}))
+// app.use(session({
+//     store: new FileStore(fileStoreOptions),
+//     // store: new MemoryStore({
+//     //     checkPeriod: 86400000 // prune expired entries every 24h
+//     // }),
+//     secret: 'alksdjflkasjdflkasjasdfasdfsa1234',
+//     resave: false,
+//     saveUninitialized: false,
+//     cookie: { secure: false }
+// }))
 // app.use((req,res,next) => {
 //     app.use((req,res,next) => {
 

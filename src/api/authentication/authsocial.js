@@ -74,8 +74,8 @@ module.exports = class SocialAuth {
     }
 
     logout(req, res) {
-        req.session.user = null;
-        req.session.destroy();
+        // req.session.user = null;
+        // req.session.destroy();
         res.cookie('X-API-KEY', '', { maxAge: Date.now(), httpOnly: true });
 
         res.json({ 'status': 'success' })
@@ -139,13 +139,13 @@ module.exports = class SocialAuth {
                 return;
             }
 
-            if (dbUser.isdev) {
-                res.redirect('http://localhost:8000/dev');
-                return;
-            }
+            // if (dbUser.isdev || (dbUser.github && dbUser.github.length > 0)) {
+            //     res.redirect('http://localhost:8000/dev');
+            //     return;
+            // }
 
             //res.setHeader('Set-Cookie', 'X-API-KEY=' + dbUser.apikey + '; HttpOnly');
-            res.redirect('http://localhost:8000/')
+            res.redirect('http://localhost:8000/login/success')
             return;
         }
         catch (e) {
