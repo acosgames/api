@@ -91,6 +91,7 @@ let socialAuthentication = social.auth();
 
 app.use(person.routes(socialAuthentication));
 app.use(devgame.routes(socialAuthentication));
+app.use(game.actionRoutes(socialAuthentication));
 
 app.use('/*', (req, res, next) => {
     if (req.path.indexOf("/api/") > -1) {
