@@ -7,41 +7,51 @@
         <meta name="author" content="fsg" />
         <meta
             http-equiv="Content-Security-Policy"
-            content="script-src 'self' cdn.fivesecondgames.com 'unsafe-inline';"
+            content="default-src 'self' https://cdn.fivesecondgames.com 'unsafe-inline' http://localhost:8001 ws://localhost:8001;"
         />
     </head>
     <body>
         <div id="root"></div>
         <script>
+            const onMessage = (evt) => {
+                let message = evt.data;
+                let origin = evt.origin;
+                let source = evt.source;
+                if (!message || message.length == 0)
+                    return;
+
+                if( message.type == 'load' ) { 
+                    
+                    let url = `https://cdn.fivesecondgames.com/file/fivesecondgames/${message.payload.gameid}/client/client.bundle.${message.payload.version}.js`;
+                    console.log(">>> Loading Client Bundle: ", url);
+                    loadJS(url);
+                    
+                    sendReady();
+                    console.log(">>> Ready message sent.");
+                    detatchMessageEvent();
+                }
+            }
+
+            function detatchMessageEvent() {
+                window.removeEventListener('message', onMessage);
+            }
+
+            function attachMessageEvent() {
+                window.addEventListener('message', onMessage, false);
+            }
+
+            function sendReady() {
+                window.parent.postMessage({ type:'ready' }, '*');
+            }
+
+
             function loadJS(url) {
                 var fileref = document.createElement('script');
                 fileref.setAttribute('src', url);
                 document.body.appendChild(fileref);
             }
-            // document.domain = 'localhost';
-            // let path = window.location.pathname;
-            // let pathParts = path.split('/');
-            // let gameid = pathParts[2];
-            // let version = pathParts[3];
-            // let url =
-            //     'https://cdn.fivesecondgames.com/file/fivesecondgames/' +
-            //     gameid +
-            //     '/client/client.bundle.' +
-            //     version +
-            //     '.js';
-            let url = '6796538598029000704/client/client.bundle.35.js';
-            loadJS(url);
+            
+            attachMessageEvent();
         </script>
-        <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script> -->
-        <script>
-            // jQuery.get('http://localhost:8080/api/v1/person').then((data) => {
-            //     console.log(data);
-            // });
-
-            // console.log(document.cookie);
-            // alert('hi');
-            console.log('hello', document);
-        </script>
-        <!-- <script src="https://cdn.fivesecondgames.com/file/fivesecondgames/6796538598029000704/client/client.bundle.35.js"></script> -->
     </body>
 </html>

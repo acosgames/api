@@ -29,9 +29,9 @@ module.exports = class DevGameAPI {
 
     bundleRoutes() {
         this.bundleRouter.post('/api/v1/dev/update/game/bundle/', devauth.auth, this.apiDevUpdateGameBundle.bind(this));
-        this.bundleRouter.post('/api/v1/dev/update/client/bundle/', devauth.auth, this.apiDevUpdateClientBundle.bind(this));
-        this.bundleRouter.post('/api/v1/dev/update/server/bundle/', devauth.auth, this.apiDevUpdateServerBundle.bind(this));
-        this.bundleRouter.post('/api/v1/dev/update/server/db/', devauth.auth, this.apiDevUpdateServerDatabase.bind(this));
+        // this.bundleRouter.post('/api/v1/dev/update/client/bundle/', devauth.auth, this.apiDevUpdateClientBundle.bind(this));
+        // this.bundleRouter.post('/api/v1/dev/update/server/bundle/', devauth.auth, this.apiDevUpdateServerBundle.bind(this));
+        // this.bundleRouter.post('/api/v1/dev/update/server/db/', devauth.auth, this.apiDevUpdateServerDatabase.bind(this));
         return this.bundleRouter;
     }
 
@@ -73,7 +73,7 @@ module.exports = class DevGameAPI {
 
     async apiDevUpdateGameBundle(req, res, next) {
         try {
-            let { clientMiddleware, serverMiddleware, dbMiddleware } = upload.middlewareGame('fivesecondgames', 'fsg-server', this.cbImageMeta)
+            let gameMiddleware = upload.middlewareGame('fivesecondgames', 'fsg-server', this.cbImageMeta)
 
             // let uploadMiddleware = upload.middlewareTransform('fivesecondgames', ['text/javascript', 'application/javascript'], this.cbImageMeta, this.cbClientBundleKey, (req, file, cb) => {
             //     cb(null, 'text/html', file.stream);
@@ -92,13 +92,13 @@ module.exports = class DevGameAPI {
             let gameFull = await devgame.findGame({ apikey });
             let gameTest = {
                 gameid: gameFull.gameid,
-                version: gameFull.version + 1,
+                version: gameFull.latest_version + 1,
                 status: 2
             }
 
             req.game = gameTest;
 
-            clientMiddleware(req, res, async function (err) {
+            gameMiddleware(req, res, async function (err) {
                 if (err) {
                     console.error(err);
                     // An unknown error occurred when uploading.
@@ -106,30 +106,30 @@ module.exports = class DevGameAPI {
                     return;
                 }
 
-                serverMiddleware(req, res, async function (err) {
-                    if (err) {
-                        console.error(err);
-                        // An unknown error occurred when uploading.
-                        next(new GeneralError("E_UPLOAD_FAILED"));
-                        return;
-                    }
+                // serverMiddleware(req, res, async function (err) {
+                //     if (err) {
+                //         console.error(err);
+                //         // An unknown error occurred when uploading.
+                //         next(new GeneralError("E_UPLOAD_FAILED"));
+                //         return;
+                //     }
 
-                    dbMiddleware(req, res, async function (err) {
-                        if (err) {
-                            console.error(err);
-                            // An unknown error occurred when uploading.
-                            next(new GeneralError("E_UPLOAD_FAILED"));
-                            return;
-                        }
+                //     dbMiddleware(req, res, async function (err) {
+                //         if (err) {
+                //             console.error(err);
+                //             // An unknown error occurred when uploading.
+                //             next(new GeneralError("E_UPLOAD_FAILED"));
+                //             return;
+                //         }
 
-                        let gameTest = await $this.createOrUpdateGameVersion(apikey);
-                        res.json(gameTest);
-                        return
-                    })
+                let gameTest = await $this.createOrUpdateGameVersion(apikey);
+                res.json(gameTest);
+                // return
+                //     })
 
-                    return
-                })
-                return
+                //     return
+                // })
+                // return
             })
         }
         catch (e) {
@@ -240,39 +240,35 @@ module.exports = class DevGameAPI {
 
     async createOrUpdateGameVersion(apikey, hasDB) {
         let game = { apikey };
-        let versions = await devgame.findGameVersions(game);
-        let gameTest = null;
+        // let versions = await devgame.findGameVersions(game);
+        // let gameTest = null;
 
         //check if we have a test version (will be higher version than published)
-        for (var i = 0; i < versions.length; i++) {
-            let gameVersion = versions[i];
-            if (gameVersion.published_version < gameVersion.version) {
-                gameTest = gameVersion;
-                break;
-            }
-        }
+        // for (var i = 0; i < versions.length; i++) {
+        //     let gameVersion = versions[i];
+        //     if (gameVersion.published_version < gameVersion.version) {
+        //         gameTest = gameVersion;
+        //         break;
+        //     }
+        // }
 
         //no test version exists, create one
-        if (!gameTest) {
-            let gameFull = await devgame.findGame(game);
-            gameTest = {
-                gameid: gameFull.gameid,
-                version: gameFull.version + 1,
-                status: 2
-            }
+        // if (!gameTest) {
+        let gameFull = await devgame.findGame(game);
 
-            gameTest = await devgame.createGameVersion(gameTest);
-            console.log("Created DevGame: ", gameTest);
-        }
-        else {
-            gameTest = await devgame.updateGameVersion(gameTest);
-            console.log("Updated DevGame: ", gameTest);
-        }
 
-        if (hasDB) {
-            gameTest = await devgame.addDBtoGameVersion(gameTest);
-            console.log(gameTest);
-        }
+        let gameTest = await devgame.createGameVersion(gameFull, hasDB);
+        // console.log("Created DevGame: ", gameFull);
+        // }
+        // else {
+        // gameTest = await devgame.updateGameInfoAboutVersion(gameTest);
+        //     console.log("Updated DevGame: ", gameTest);
+        // }
+
+        // if (hasDB) {
+        //     gameTest = await devgame.addDBtoGameVersion(gameTest);
+        //     console.log(gameTest);
+        // }
 
         return gameTest;
     }
