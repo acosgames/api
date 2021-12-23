@@ -81,7 +81,7 @@ module.exports = class PersonAPI {
             }
             let token = await persons.encodeUserToken(tokenUser, JWT_PRIVATE_KEY);
 
-            res.cookie('X-API-KEY', token, { httpOnly: true })
+            res.cookie('X-API-KEY', token, { httpOnly: true, SameSite: 'Strict' })
         }
         catch (e) {
             next(e);

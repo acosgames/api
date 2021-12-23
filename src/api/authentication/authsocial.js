@@ -76,7 +76,7 @@ module.exports = class SocialAuth {
     logout(req, res) {
         // req.session.user = null;
         // req.session.destroy();
-        res.cookie('X-API-KEY', '', { maxAge: Date.now(), httpOnly: true });
+        res.cookie('X-API-KEY', '', { maxAge: Date.now(), httpOnly: true, SameSite: 'Strict' });
 
         res.json({ 'status': 'success' })
     }
@@ -131,7 +131,7 @@ module.exports = class SocialAuth {
             req.user = dbUser;
 
 
-            res.cookie('X-API-KEY', token, { httpOnly: true })
+            res.cookie('X-API-KEY', token, { httpOnly: true, SameSite: 'Strict' })
 
             if (!dbUser.displayname || dbUser.displayname.length == 0 || dbUser.displayname == dbUser.apikey) {
                 //res.setHeader('Set-Cookie', 'X-API-KEY=' + dbUser.apikey + '; HttpOnly');

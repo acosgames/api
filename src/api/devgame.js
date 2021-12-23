@@ -51,6 +51,8 @@ module.exports = class DevGameAPI {
 
         this.router.get('/api/v1/dev/find/game/:gameid', middleware, this.apiDevFindGame.bind(this));
         this.router.post('/api/v1/dev/create/game', middleware, this.apiDevCreateGame.bind(this));
+        this.router.post('/api/v1/dev/deploy/game', middleware, this.apiDevDeployGame.bind(this));
+
         this.router.post('/api/v1/dev/update/game', middleware, this.apiDevUpdateGame.bind(this));
         this.router.post('/api/v1/dev/update/game/images/:gameid', middleware, this.apiDevUpdateGameImages.bind(this));
         return this.router;
@@ -85,6 +87,21 @@ module.exports = class DevGameAPI {
                 res.json({ ecode: 'E_UPLOADFAILED' });
                 return;
             }
+
+            let scaled = req.header('X-GAME-SCALED');
+            if (!scaled || scaled == 'no') {
+                scaled = false;
+            } else {
+                scaled = true;
+            }
+
+            let hasDB = req.header('X-GAME-HASDB');
+            if (!hasDB || hasDB == 'no') {
+                hasDB = false;
+            } else {
+                hasDB = true;
+            }
+
             // let apikey = '6394232D38D14DB2AC5B09E329CFD00E';
 
             var $this = this;
@@ -93,6 +110,8 @@ module.exports = class DevGameAPI {
             let gameTest = {
                 gameid: gameFull.gameid,
                 version: gameFull.latest_version + 1,
+                scaled,
+                db: hasDB,
                 status: 2
             }
 
@@ -122,8 +141,13 @@ module.exports = class DevGameAPI {
                 //             return;
                 //         }
 
-                let gameTest = await $this.createOrUpdateGameVersion(apikey);
-                res.json(gameTest);
+                try {
+                    let gameTest = await $this.createOrUpdateGameVersion(apikey, hasDB, scaled);
+                    res.json(gameTest);
+                }
+                catch (e) {
+                    next(new GeneralError("E_UPLOAD_FAILED"));
+                }
                 // return
                 //     })
 
@@ -238,7 +262,7 @@ module.exports = class DevGameAPI {
         }
     }
 
-    async createOrUpdateGameVersion(apikey, hasDB) {
+    async createOrUpdateGameVersion(apikey, hasDB, scaled) {
         let game = { apikey };
         // let versions = await devgame.findGameVersions(game);
         // let gameTest = null;
@@ -257,7 +281,7 @@ module.exports = class DevGameAPI {
         let gameFull = await devgame.findGame(game);
 
 
-        let gameTest = await devgame.createGameVersion(gameFull, hasDB);
+        let gameTest = await devgame.createGameVersion(gameFull, hasDB, scaled);
         // console.log("Created DevGame: ", gameFull);
         // }
         // else {
@@ -296,7 +320,7 @@ module.exports = class DevGameAPI {
     }
 
     async apiDevFindGame(req, res, next) {
-        let game = { id: req.params.gameid };
+        let game = { gameid: req.params.gameid };
 
         try {
             if (!game) {
@@ -678,6 +702,29 @@ module.exports = class DevGameAPI {
         }
 
     }
+
+    async apiDevDeployGame(req, res, next) {
+        let game = req.body;
+
+        try {
+            if (!game) {
+                throw new GeneralError("E_MISSING_DEVGAME");
+            }
+            let pushedGame = await devgame.deployGame(game, req.user);
+            if (!pushedGame) {
+                throw new GeneralError("E_CREATEFAILED_GAME");
+            }
+
+            if (pushedGame.ecode)
+                res.status(400);
+            res.json(pushedGame);
+        }
+        catch (e) {
+            next(e);
+        }
+
+    }
+
 
 
 }

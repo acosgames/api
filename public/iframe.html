@@ -9,6 +9,7 @@
             http-equiv="Content-Security-Policy"
             content="default-src 'self' https://cdn.fivesecondgames.com 'unsafe-inline' http://localhost:8001 ws://localhost:8001;"
         />
+        
     </head>
     <body>
         <div id="root"></div>
@@ -21,29 +22,20 @@
                     return;
 
                 if( message.type == 'load' ) { 
-                    
+                    detatchMessageEvent();
                     let url = `https://cdn.fivesecondgames.com/file/fivesecondgames/${message.payload.gameid}/client/client.bundle.${message.payload.version}.js`;
                     console.log(">>> Loading Client Bundle: ", url);
                     loadJS(url);
-                    
-                    sendReady();
-                    console.log(">>> Ready message sent.");
-                    detatchMessageEvent();
                 }
             }
 
             function detatchMessageEvent() {
-                window.removeEventListener('message', onMessage);
+                window.removeEventListener('message', onMessage, false);
             }
 
             function attachMessageEvent() {
                 window.addEventListener('message', onMessage, false);
             }
-
-            function sendReady() {
-                window.parent.postMessage({ type:'ready' }, '*');
-            }
-
 
             function loadJS(url) {
                 var fileref = document.createElement('script');
