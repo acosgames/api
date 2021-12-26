@@ -23,7 +23,7 @@
 
                 if( message.type == 'load' ) { 
                     detatchMessageEvent();
-                    let url = `https://cdn.fivesecondgames.com/file/fivesecondgames/${message.payload.gameid}/client/client.bundle.${message.payload.version}.js`;
+                    let url = `https://cdn.fivesecondgames.com/file/fivesecondgames/${message.payload.game_slug}/client/client.bundle.${message.payload.version}.js`;
                     console.log(">>> Loading Client Bundle: ", url);
                     loadJS(url);
                 }

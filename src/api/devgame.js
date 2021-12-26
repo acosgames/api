@@ -54,7 +54,7 @@ module.exports = class DevGameAPI {
         this.router.post('/api/v1/dev/deploy/game', middleware, this.apiDevDeployGame.bind(this));
 
         this.router.post('/api/v1/dev/update/game', middleware, this.apiDevUpdateGame.bind(this));
-        this.router.post('/api/v1/dev/update/game/images/:gameid', middleware, this.apiDevUpdateGameImages.bind(this));
+        this.router.post('/api/v1/dev/update/game/images/:game_slug', middleware, this.apiDevUpdateGameImages.bind(this));
         return this.router;
     }
 
@@ -108,7 +108,7 @@ module.exports = class DevGameAPI {
 
             let gameFull = await devgame.findGame({ apikey });
             let gameTest = {
-                gameid: gameFull.gameid,
+                game_slug: gameFull.game_slug,
                 version: gameFull.latest_version + 1,
                 scaled,
                 db: hasDB,
@@ -486,10 +486,10 @@ module.exports = class DevGameAPI {
         filename = genShortId(4) + '.' + ext;
         filename = '1.' + ext;
 
-        let gameid = req.body.gameid;
+        let game_slug = req.body.game_slug;
         let user = req.user;
 
-        let key = gameid + '/preview/' + filename;
+        let key = game_slug + '/preview/' + filename;
 
         cb(null, key)
     }
@@ -596,10 +596,10 @@ module.exports = class DevGameAPI {
             let uploadMiddleware = upload.middleware('fivesecondgames', ['image/jpeg', 'image/png'], this.cbImageMeta, this.cbImageKey);
             let imageMiddleware = uploadMiddleware.array('images', 1);
 
-            let gameid = req.params.gameid;
+            let game_slug = req.params.game_slug;
             let user = req.user;
 
-            let game = await devgame.findGame({ gameid }, user);
+            let game = await devgame.findGame({ game_slug }, user);
 
             let deleted = await upload.deletePreviews(game);
 
@@ -611,12 +611,12 @@ module.exports = class DevGameAPI {
                     return;
                 }
 
-                let gameid = req.body.gameid;
+                let game_slug = req.body.game_slug;
                 let user = req.user;
                 let files = req.files;
-                files = files.map(v => v.key.replace(gameid + '/preview/', ''));
+                files = files.map(v => v.key.replace(game_slug + '/preview/', ''));
 
-                let response = await devgame.updatePreviewImages(gameid, user, files);
+                let response = await devgame.updatePreviewImages(game_slug, user, files);
                 console.log(response.data);
 
                 res.json({ images: files });
