@@ -45,7 +45,7 @@ module.exports = class GameAPI {
         try {
             let user = req.user;
             let game_slug = req.params.game_slug;
-            g = await game.findGamePerson(game_slug, user.shortid);
+            g = await game.findGamePerson(game_slug, user.shortid, user.displayname);
         }
         catch (e) {
             next(e);
