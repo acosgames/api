@@ -1,12 +1,12 @@
 {
-  "name": "fsg-api",
+  "name": "api",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
     "start": "npm run dev",
-    "dev": "pm2 start index.js --name fsg-api --node-args=\"--inspect=10001\" --watch \". ../fsg-shared\" --ignore-watch \"sessions public package.json node_modules\"",
-    "dev-gitwebhook": "pm2 start gitwebhook.js --node-args=\"--inspect=10002\" --name fsg-gitworker --watch \". ../fsg-shared\" --ignore-watch \"sessions/ public/\"",
+    "dev": "pm2 start index.js --name api --node-args=\"--inspect=10001\" --watch \". ../shared\" --ignore-watch \"sessions public package.json node_modules\"",
+    "dev-gitwebhook": "pm2 start gitwebhook.js --node-args=\"--inspect=10002\" --name gitworker --watch \". ../shared\" --ignore-watch \"sessions/ public/\"",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
@@ -16,7 +16,7 @@
     "cors": "^2.8.5",
     "express": "^4.17.1",
     "express-session": "^1.17.1",
-    "fsg-shared": "file:../fsg-shared",
+    "shared": "file:../shared",
     "github-webhook-handler": "^1.0.0",
     "passport": "^0.4.1",
     "passport-facebook": "^3.0.0",

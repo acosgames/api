@@ -1,10 +1,10 @@
-const credutil = require('fsg-shared/util/credentials');
+const credutil = require('shared/util/credentials');
 const { Router } = require('express');
 
-const MySQL = require('fsg-shared/services/mysql.js');
+const MySQL = require('shared/services/mysql.js');
 const mysql = new MySQL();
 
-const PersonService = require('fsg-shared/services/person');
+const PersonService = require('shared/services/person');
 const persons = new PersonService();
 
 const uws = require('uWebSockets.js').App();

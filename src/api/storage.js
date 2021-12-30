@@ -1,4 +1,4 @@
-const cache = require('fsg-shared/services/cache');
+const cache = require('shared/services/cache');
 
 class Storage {
     constructor() {

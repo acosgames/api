@@ -1,8 +1,8 @@
 
-const credutil = require('fsg-shared/util/credentials');
+const credutil = require('shared/util/credentials');
 const { Router } = require('express');
 
-const DevGameService = require('fsg-shared/services/devgame');
+const DevGameService = require('shared/services/devgame');
 const devgame = new DevGameService();
 
 module.exports = class DevAuth {

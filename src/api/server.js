@@ -1,7 +1,7 @@
-const credutil = require('fsg-shared/util/credentials');
+const credutil = require('shared/util/credentials');
 const { Router } = require('express');
 
-const ServerRemoteService = require('fsg-shared/services/instanceremote');
+const ServerRemoteService = require('shared/services/instanceremote');
 const remote = new ServerRemoteService();
 
 

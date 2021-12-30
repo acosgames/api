@@ -5,10 +5,10 @@ const cookieParser = require('cookie-parser');
 const session = require('express-session');
 // const MemoryStore = require('memorystore')(session)
 var FileStore = require('session-file-store')(session);
-const profiler = require('fsg-shared/util/profiler')
-const { GeneralError } = require('fsg-shared/util/errorhandler');
+const profiler = require('shared/util/profiler')
+const { GeneralError } = require('shared/util/errorhandler');
 
-const credutil = require('fsg-shared/util/credentials');
+const credutil = require('shared/util/credentials');
 const credentials = credutil();
 const PORT = process.env.PORT || credentials.platform.api.port;
 const path = require('path');

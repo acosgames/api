@@ -2,7 +2,7 @@
 
 const GithubStrategy = require('passport-github2').Strategy;
 // const jwt = require('jsonwebtoken');
-const credutil = require('fsg-shared/util/credentials');
+const credutil = require('shared/util/credentials');
 
 module.exports = class GithubAuth {
     constructor(credentials) {

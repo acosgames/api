@@ -1,12 +1,12 @@
-const credutil = require('fsg-shared/util/credentials');
+const credutil = require('shared/util/credentials');
 const { Router } = require('express');
 
-const MySQL = require('fsg-shared/services/mysql.js');
+const MySQL = require('shared/services/mysql.js');
 const mysql = new MySQL();
 
-const { GeneralError } = require('fsg-shared/util/errorhandler');
+const { GeneralError } = require('shared/util/errorhandler');
 
-const GameService = require('fsg-shared/services/game');
+const GameService = require('shared/services/game');
 const game = new GameService();
 
 const storage = require('./storage');
