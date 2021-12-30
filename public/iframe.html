@@ -2,18 +2,20 @@
 <html lang="en">
     <head>
         <meta charset="utf-8" />
-        <title>FiveSecondGames - Client Simulator</title>
-        <meta name="description" content="FiveSecondGames Client Simulator" />
+        <title>ACOS - Client Simulator</title>
+        <meta name="description" content="ACOS Client Simulator" />
         <meta name="author" content="A Cup of Skill" />
         <meta
             http-equiv="Content-Security-Policy"
-            content="default-src 'self' https://fonts.gstatic.com https://fonts.googleapis.com https://cdn.fivesecondgames.com https://cdn.acos.games 'unsafe-inline' http://localhost:8001 ws://localhost:8001;"
+            content="default-src 'self' https://fonts.gstatic.com https://fonts.googleapis.com https://acospub.s3.us-west-000.backblazeb2.com https://cdn.fivesecondgames.com https://cdn.acos.games 'unsafe-inline' http://localhost:8001 ws://localhost:8001;"
         />
         
     </head>
     <body>
         <div id="root"></div>
         <script>
+            // const urlprefix = 'cdn.fivesecondgames.com/file/fivesecondgames/';
+            const urlprefix = 'acospub.s3.us-west-000.backblazeb2.com/';
             const onMessage = (evt) => {
                 let message = evt.data;
                 let origin = evt.origin;
@@ -23,7 +25,7 @@
 
                 if( message.type == 'load' ) { 
                     detatchMessageEvent();
-                    let url = `https://cdn.fivesecondgames.com/file/fivesecondgames/${message.payload.game_slug}/client/client.bundle.${message.payload.version}.js`;
+                    let url = `https://${urlprefix}${message.payload.game_slug}/client/client.bundle.${message.payload.version}.js`;
                     console.log(">>> Loading Client Bundle: ", url);
                     loadJS(url);
                 }
