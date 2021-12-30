@@ -29,25 +29,16 @@ module.exports = class DevGameAPI {
 
     bundleRoutes() {
         this.bundleRouter.post('/api/v1/dev/update/game/bundle/', devauth.auth, this.apiDevUpdateGameBundle.bind(this));
-        // this.bundleRouter.post('/api/v1/dev/update/client/bundle/', devauth.auth, this.apiDevUpdateClientBundle.bind(this));
-        // this.bundleRouter.post('/api/v1/dev/update/server/bundle/', devauth.auth, this.apiDevUpdateServerBundle.bind(this));
-        // this.bundleRouter.post('/api/v1/dev/update/server/db/', devauth.auth, this.apiDevUpdateServerDatabase.bind(this));
         return this.bundleRouter;
     }
 
     routes(middleware) {
         middleware = middleware || ((req, res, next) => { next() })
 
-        // this.router.post('/api/v1/dev/create/server/:gameid', middleware, this.apiDevCreateServer.bind(this));
-        // this.router.post('/api/v1/dev/find/server/:gameid', middleware, this.apiDevFindServer.bind(this));
 
         this.router.post('/api/v1/dev/invite/github', middleware, this.apiInviteGithub.bind(this));
 
         this.router.get('/api/v1/dev/games/:userid', middleware, this.apiDevGames.bind(this));
-
-        // this.router.post('/api/v1/dev/create/client/:gameid', middleware, this.apiDevCreateClient.bind(this));
-        // this.router.post('/api/v1/dev/find/client/:gameid', middleware, this.apiDevFindClient.bind(this));
-        // this.router.post('/api/v1/dev/update/client/images/:clientid', middleware, this.apiDevUpdateClientImages.bind(this));
 
         this.router.get('/api/v1/dev/find/game/:gameid', middleware, this.apiDevFindGame.bind(this));
         this.router.post('/api/v1/dev/create/game', middleware, this.apiDevCreateGame.bind(this));
@@ -75,12 +66,7 @@ module.exports = class DevGameAPI {
 
     async apiDevUpdateGameBundle(req, res, next) {
         try {
-            let gameMiddleware = upload.middlewareGame('fivesecondgames', 'fsg-server', this.cbImageMeta)
-
-            // let uploadMiddleware = upload.middlewareTransform('fivesecondgames', ['text/javascript', 'application/javascript'], this.cbImageMeta, this.cbClientBundleKey, (req, file, cb) => {
-            //     cb(null, 'text/html', file.stream);
-            // });
-            // let imageMiddleware = uploadMiddleware.array('bundle', 1);
+            let gameMiddleware = upload.middlewareGame('acospub', 'acospriv', this.cbImageMeta)
 
             let apikey = req.header('X-GAME-API-KEY');
             if (!apikey) {
@@ -125,22 +111,6 @@ module.exports = class DevGameAPI {
                     return;
                 }
 
-                // serverMiddleware(req, res, async function (err) {
-                //     if (err) {
-                //         console.error(err);
-                //         // An unknown error occurred when uploading.
-                //         next(new GeneralError("E_UPLOAD_FAILED"));
-                //         return;
-                //     }
-
-                //     dbMiddleware(req, res, async function (err) {
-                //         if (err) {
-                //             console.error(err);
-                //             // An unknown error occurred when uploading.
-                //             next(new GeneralError("E_UPLOAD_FAILED"));
-                //             return;
-                //         }
-
                 try {
                     let gameTest = await $this.createOrUpdateGameVersion(apikey, hasDB, scaled);
                     res.json(gameTest);
@@ -148,12 +118,6 @@ module.exports = class DevGameAPI {
                 catch (e) {
                     next(new GeneralError("E_UPLOAD_FAILED"));
                 }
-                // return
-                //     })
-
-                //     return
-                // })
-                // return
             })
         }
         catch (e) {
@@ -162,137 +126,14 @@ module.exports = class DevGameAPI {
         }
     }
 
-    async apiDevUpdateServerDatabase(req, res, next) {
-        try {
-            let uploadMiddleware = upload.middlewarePrivateDB('fsg-server', ['text/javascript', 'application/json'], this.cbImageMeta, this.cbServerDBKey);
-            let imageMiddleware = uploadMiddleware.array('db', 1);
-
-            let apikey = req.header('X-GAME-API-KEY');
-            if (!apikey) {
-                res.json({ ecode: 'E_UPLOADFAILED' });
-                return;
-            }
-            // let apikey = '6394232D38D14DB2AC5B09E329CFD00E';
-            let gameTest = await this.createOrUpdateGameVersion(apikey, true);
-
-            req.game = gameTest;
-
-            imageMiddleware(req, res, async function (err) {
-                if (err) {
-                    console.error(err);
-                    // An unknown error occurred when uploading.
-                    next(new GeneralError("E_UPLOAD_FAILED"));
-                    return;
-                }
-                res.json(gameTest);
-                return
-            })
-        }
-        catch (e) {
-            console.error(e);
-            next(new GeneralError("E_UPLOAD_FAILED"));
-        }
-    }
-
-    async apiDevUpdateServerBundle(req, res, next) {
-        try {
-            let uploadMiddleware = upload.middlewarePrivate('fsg-server', ['text/javascript', 'application/javascript'], this.cbImageMeta, this.cbServerBundleKey);
-            let imageMiddleware = uploadMiddleware.array('bundle', 1);
-
-            let apikey = req.header('X-GAME-API-KEY');
-            if (!apikey) {
-                res.json({ ecode: 'E_UPLOADFAILED' });
-                return;
-            }
-
-            // let apikey = '6394232D38D14DB2AC5B09E329CFD00E';
-            let gameTest = await this.createOrUpdateGameVersion(apikey);
-            req.game = gameTest;
-
-            imageMiddleware(req, res, async function (err) {
-                if (err) {
-                    console.error(err);
-                    // An unknown error occurred when uploading.
-                    next(new GeneralError("E_UPLOAD_FAILED"));
-                    return;
-                }
-                res.json(gameTest);
-                return
-            })
-        }
-        catch (e) {
-            console.error(e);
-            next(new GeneralError("E_UPLOAD_FAILED"));
-        }
-    }
-
-    async apiDevUpdateClientBundle(req, res, next) {
-        try {
-            let uploadMiddleware = upload.middlewareTransform('fivesecondgames', ['text/javascript', 'application/javascript'], this.cbImageMeta, this.cbClientBundleKey, (req, file, cb) => {
-                cb(null, 'text/html', file.stream);
-            });
-            let imageMiddleware = uploadMiddleware.array('bundle', 1);
-
-            let apikey = req.header('X-GAME-API-KEY');
-            if (!apikey) {
-                res.json({ ecode: 'E_UPLOADFAILED' });
-                return;
-            }
-            // let apikey = '6394232D38D14DB2AC5B09E329CFD00E';
-
-            let gameTest = await this.createOrUpdateGameVersion(apikey);
-
-            req.game = gameTest;
-
-            imageMiddleware(req, res, async function (err) {
-                if (err) {
-                    console.error(err);
-                    // An unknown error occurred when uploading.
-                    next(new GeneralError("E_UPLOAD_FAILED"));
-                    return;
-                }
-
-                res.json(gameTest);
-                return
-            })
-        }
-        catch (e) {
-            console.error(e);
-            next(new GeneralError("E_UPLOAD_FAILED"));
-        }
-    }
 
     async createOrUpdateGameVersion(apikey, hasDB, scaled) {
         let game = { apikey };
-        // let versions = await devgame.findGameVersions(game);
-        // let gameTest = null;
 
-        //check if we have a test version (will be higher version than published)
-        // for (var i = 0; i < versions.length; i++) {
-        //     let gameVersion = versions[i];
-        //     if (gameVersion.published_version < gameVersion.version) {
-        //         gameTest = gameVersion;
-        //         break;
-        //     }
-        // }
-
-        //no test version exists, create one
-        // if (!gameTest) {
         let gameFull = await devgame.findGame(game);
 
 
         let gameTest = await devgame.createGameVersion(gameFull, hasDB, scaled);
-        // console.log("Created DevGame: ", gameFull);
-        // }
-        // else {
-        // gameTest = await devgame.updateGameInfoAboutVersion(gameTest);
-        //     console.log("Updated DevGame: ", gameTest);
-        // }
-
-        // if (hasDB) {
-        //     gameTest = await devgame.addDBtoGameVersion(gameTest);
-        //     console.log(gameTest);
-        // }
 
         return gameTest;
     }
@@ -341,103 +182,8 @@ module.exports = class DevGameAPI {
 
     }
 
-    async apiDevFindClient(req, res, next) {
-        let client = { id: req.params.gameid };
 
-        try {
-            if (!client) {
-                throw new GeneralError("E_CLIENT_MISSING");
-            }
-            let sessionUser = req.user;
 
-            let pushedClient = await devgame.findClient(client, sessionUser);
-            if (!pushedClient) {
-                throw new GeneralError("E_CLIENT_NOTFOUND");
-            }
-
-            res.json(pushedClient);
-        }
-        catch (e) {
-            next(e);
-        }
-
-    }
-
-    async apiDevFindServer(req, res, next) {
-        let server = { id: req.params.gameid };
-
-        try {
-            if (!server) {
-                throw new GeneralError("E_SERVER_MISSING");
-            }
-            let sessionUser = req.user;
-
-            let pushedServer = await devgame.findServer(server, sessionUser);
-            if (!pushedServer) {
-                throw new GeneralError("E_SERVER_NOTFOUND");
-            }
-
-            res.json(pushedServer);
-        }
-        catch (e) {
-            next(e);
-        }
-
-    }
-
-    async devUpdateClient(req, res, next) {
-        let client = req.body;
-
-        if (typeof client.version == 'string')
-            client.version = parseInt(client.version);
-
-        try {
-            if (!client) {
-                throw new GeneralError("E_CLIENT_MISSING");
-            }
-            let sessionUser = req.user;
-
-            let pushed = await devgame.updateClient(client, sessionUser);
-            if (!pushed) {
-                throw new GeneralError("E_CLIENT_CREATEFAILED");
-            }
-
-            if (pushed.ecode)
-                res.status(400);
-            res.json(pushed);
-        }
-        catch (e) {
-            next(e);
-        }
-
-    }
-
-    async devUpdateServer(req, res, next) {
-        let server = req.body;
-
-        if (typeof server.version == 'string')
-            server.version = parseInt(server.version);
-
-        try {
-            if (!server) {
-                throw new GeneralError("E_SERVER_MISSING");
-            }
-            let sessionUser = req.user;
-
-            let pushed = await devgame.updateServer(server, sessionUser);
-            if (!pushed) {
-                throw new GeneralError("E_SERVER_CREATEFAILED");
-            }
-
-            if (pushed.ecode)
-                res.status(400);
-            res.json(pushed);
-        }
-        catch (e) {
-            next(e);
-        }
-
-    }
 
     async apiDevUpdateGame(req, res, next) {
         let game = req.body;
@@ -494,106 +240,13 @@ module.exports = class DevGameAPI {
         cb(null, key)
     }
 
-    cbServerDBKey(req, file, cb) {
-        let game = req.game;
-        var filename = file.originalname;
-        filename = "server.db." + game.version + '.json';
-        let key = game.gameid + '/' + filename;
 
-        cb(null, key)
-    }
 
-    cbServerBundleKey(req, file, cb) {
-        let game = req.game;
-        var filename = file.originalname;
-        filename = filename.replace('.js', '.' + game.version + '.js')
-        let key = game.gameid + '/' + filename;
-
-        cb(null, key)
-    }
-
-    cbClientBundleKey(req, file, cb) {
-
-        let game = req.game;
-        var filename = file.originalname;
-        filename = filename.replace('.js', '.' + game.version + '.js')
-        let key = game.gameid + '/client/' + filename;
-
-        cb(null, key)
-    }
-
-    cbClientImageKey(req, file, cb) {
-        if (!req.user) {
-            let err = new GeneralError('E_USER_NOTAUTHORIZED');
-            cb(err, 'failed')
-            return;
-        }
-
-        var filename = file.originalname;
-        let ext = filename.split('.').pop();
-
-        if (filename == ext)
-            ext = 'jpg';
-
-        filename = genShortId(4) + '.' + ext;
-        filename = '1.' + ext;
-
-        let gameid = req.body.gameid;
-        let clientid = req.body.clientid;
-        let user = req.session.user;
-
-        let key = gameid + '/client/' + clientid + '/' + filename;
-
-        cb(null, key)
-    }
-
-    async apiDevUpdateClientImages(req, res, next) {
-        try {
-            let uploadMiddleware = upload.middleware('fivesecondgames', ['image/jpeg', 'image/png'], this.cbImageMeta, this.cbClientImageKey);
-            let imageMiddleware = uploadMiddleware.array('images', 1);
-
-            let clientid = req.params.clientid;
-            let user = req.user;
-
-            let clients = await devgame.findClient({ id: clientid }, user);
-            if (!clients || clients.length == 0)
-                return;
-
-            let client = clients[0];
-            let deleted = await upload.deleteClientPreviews(client);
-
-            imageMiddleware(req, res, async function (err) {
-                if (err) {
-                    console.error(err);
-                    // An unknown error occurred when uploading.
-                    next(new GeneralError("E_UPLOAD_FAILED"));
-                    return;
-                }
-
-                let clientid = req.body.clientid;
-                let user = req.user;
-                let files = req.files;
-                files = files.map(v => v.key.replace(client.gameid + '/client/' + client.id + '/', ''));
-
-                client.preview_images = files.join(',');
-                let response = await devgame.updateClientPreviewImages(client, user, files);
-                console.log(response);
-
-                res.json(client);
-                return
-            })
-        }
-        catch (e) {
-            console.error(e);
-            next(new GeneralError("E_UPLOAD_FAILED"));
-        }
-
-    }
     async apiDevUpdateGameImages(req, res, next) {
         // let game = req.body;
 
         try {
-            let uploadMiddleware = upload.middleware('fivesecondgames', ['image/jpeg', 'image/png'], this.cbImageMeta, this.cbImageKey);
+            let uploadMiddleware = upload.middleware('acospub', ['image/jpeg', 'image/png'], this.cbImageMeta, this.cbImageKey);
             let imageMiddleware = uploadMiddleware.array('images', 1);
 
             let game_slug = req.params.game_slug;
@@ -630,56 +283,6 @@ module.exports = class DevGameAPI {
 
     }
 
-
-    async apiDevCreateClient(req, res, next) {
-        let client = req.body;
-
-        client.gameid = req.params.gameid;
-        try {
-            if (!client) {
-                throw new GeneralError("E_MISSING_DEVCLIENT");
-            }
-            let sessionUser = req.user;
-
-            let pushedClient = await devgame.createClient(client, sessionUser);
-            if (!pushedClient) {
-                throw new GeneralError("E_CREATEFAILED_CLIENT");
-            }
-
-            if (pushedClient.ecode)
-                res.status(400);
-            res.json(pushedClient);
-        }
-        catch (e) {
-            next(e);
-        }
-
-    }
-
-    async apiDevCreateServer(req, res, next) {
-        let server = req.body;
-
-        server.gameid = req.params.gameid;
-        try {
-            if (!server) {
-                throw new GeneralError("E_MISSING_DEVSERVER");
-            }
-            let sessionUser = req.user;
-
-            let pushedServer = await devgame.createOrUpdateServer(server, sessionUser);
-            if (!pushedServer) {
-                throw new GeneralError("E_CREATEFAILED_SERVER");
-            }
-
-            if (pushedServer.ecode)
-                res.status(400);
-            res.json(pushedServer);
-        }
-        catch (e) {
-            next(e);
-        }
-
-    }
 
     async apiDevCreateGame(req, res, next) {
         let game = req.body;
