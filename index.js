@@ -65,6 +65,9 @@ const game = new GameAPI();
 
 app.use('/assets', express.static(path.join(__dirname, 'public')));
 
+app.use('/.well-known', express.static(path.join(__dirname, 'public/.well-known'), { dotfiles: 'allow' }));
+
+
 app.use(social.routes());
 
 const dir = `${__dirname}/public/`;
