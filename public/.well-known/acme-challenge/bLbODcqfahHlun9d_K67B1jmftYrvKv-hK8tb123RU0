@@ -1,1 +1,6 @@
-XB9TJsVje7RLB4iiEk--nxQNRXFWCv8DUzw1UlYzF7g.-6rDOqk6MSxwbWv2ddO4weiWX1_tUZP2a7VyX8-cvHk
+bLbODcqfahHlun9d_K67B1jmftYrvKv-hK8tb123RU0.-6rDOqk6MSxwbWv2ddO4weiWX1_tUZP2a7VyX8-cvHk
+
+sudo sh -c  'cat /etc/letsencrypt/live/acos.games/fullchain.pem /etc/letsencrypt/live/acos.games/privkey.pem > /etc/haproxy/certs/acos.games.pem'
+
+
+sudo certbot certonly --manual --preferred-challenges dns --email admin@acos.games -d *.acos.games
