@@ -37,7 +37,7 @@ module.exports = class GithubAuth {
             //let [user] = await db('users').select(['id', 'name', 'email']).where('email', user_email); //check whether user exist in database
             let redirect_url = "";
             if (email) {
-                return done(null, { email, github, github_id, displayname });  //redirect_url will get appended to req.user object : passport.js in action
+                return done(null, { email, github, github_id });  //redirect_url will get appended to req.user object : passport.js in action
             } else {
                 return done(null, {});
             }
