@@ -33,7 +33,7 @@ module.exports = class GithubAuth {
             let email = profile.emails && profile.emails[0].value; //profile object has the user info
             let github = profile.username;
             let github_id = parseInt(profile.id);
-            let displayname = github;
+            // let displayname = github;
             //let [user] = await db('users').select(['id', 'name', 'email']).where('email', user_email); //check whether user exist in database
             let redirect_url = "";
             if (email) {
