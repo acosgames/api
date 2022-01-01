@@ -14,9 +14,12 @@ const persons = new PersonService();
 const fs = require('fs');
 
 const JWT_PRIVATE_KEY = fs.readFileSync('./src/credentials/jwtRS256.key');
+
+const creds = credutil();
+
 module.exports = class SocialAuth {
     constructor(credentials) {
-        this.credentials = credentials || credutil();
+        this.credentials = credentials || creds;
 
         this.google = new GoogleAuth(credentials);
         this.microsoft = new MicrosoftAuth(credentials);
@@ -103,7 +106,7 @@ module.exports = class SocialAuth {
     }
 
     async redirect(req, res) {
-        let websiteurl = credutil().platform.website.url;
+        let websiteurl = creds.platform.website.url;
 
         if (!req.user)
             res.redirect(websiteurl)
