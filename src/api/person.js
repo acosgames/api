@@ -34,7 +34,7 @@ module.exports = class PersonAPI {
     async apiGetProfile(req, res, next) {
         try {
             if (!req.user) {
-                throw new GeneralError('E_USER_NOTAUTHORIZED');
+                throw new GeneralError('E_NOTAUTHORIZED');
             }
 
             req.user.token = req.cookies['X-API-KEY'];

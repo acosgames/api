@@ -218,7 +218,7 @@ module.exports = class DevGameAPI {
 
     cbImageKey(req, file, cb) {
         if (!req.user) {
-            let err = new GeneralError('E_USER_NOTAUTHORIZED');
+            let err = new GeneralError('E_NOTAUTHORIZED');
             cb(err, 'failed')
             return;
         }

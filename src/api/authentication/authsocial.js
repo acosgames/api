@@ -50,7 +50,7 @@ module.exports = class SocialAuth {
             if (jwtToken == 'undefined' || !jwtToken) {
                 jwtToken = req.header('X-API-KEY');
                 if (!jwtToken) {
-                    res.json({ ecode: 'E_USER_NOTAUTHORIZED' });
+                    res.json({ ecode: 'E_NOTAUTHORIZED' });
                     return;
                 }
             }
@@ -58,14 +58,14 @@ module.exports = class SocialAuth {
             try {
                 let user = await persons.decodeUserToken(jwtToken);
                 if (!user) {
-                    res.json({ ecode: 'E_USER_NOTAUTHORIZED' });
+                    res.json({ ecode: 'E_NOTAUTHORIZED' });
                     return;
                 }
 
                 req.user = user;
             }
             catch (e) {
-                res.json({ ecode: 'E_USER_NOTAUTHORIZED' });
+                res.json({ ecode: 'E_NOTAUTHORIZED' });
                 return;
             }
 
@@ -103,8 +103,10 @@ module.exports = class SocialAuth {
     }
 
     async redirect(req, res) {
+        let websiteurl = credutil().platform.website.url;
+
         if (!req.user)
-            res.redirect('http://localhost:8000')
+            res.redirect(websiteurl)
 
 
         // console.log(req.session.passport);
@@ -135,7 +137,7 @@ module.exports = class SocialAuth {
 
             if (!dbUser.displayname || dbUser.displayname.length == 0 || dbUser.displayname == dbUser.apikey) {
                 //res.setHeader('Set-Cookie', 'X-API-KEY=' + dbUser.apikey + '; HttpOnly');
-                res.redirect('http://localhost:8000/player/create');
+                res.redirect(`${websiteurl}/player/create`);
                 return;
             }
 
@@ -145,7 +147,7 @@ module.exports = class SocialAuth {
             // }
 
             //res.setHeader('Set-Cookie', 'X-API-KEY=' + dbUser.apikey + '; HttpOnly');
-            res.redirect('http://localhost:8000/login/success')
+            res.redirect(`${websiteurl}/login/success`)
             return;
         }
         catch (e) {
@@ -153,10 +155,7 @@ module.exports = class SocialAuth {
 
         }
 
-        res.redirect('http://localhost:8000/login/');
+        res.redirect(`${websiteurl}/login/`);
     }
 
-    getDomain() {
-        return `http://${process.env.HOST}:${process.env.PORT}`;
-    }
 }
