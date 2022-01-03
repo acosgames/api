@@ -80,6 +80,14 @@ app.get('/bundle.js', (req, res, next) => {
     res.sendFile(dir + 'bundle.js');
 })
 
+app.get('/favicon.ico', (req, res, next) => {
+    res.sendFile(dir + 'favicon.ico');
+})
+
+app.get('/acos-logo.png', (req, res, next) => {
+    res.sendFile(dir + '/acos-logo.png');
+})
+
 
 
 
