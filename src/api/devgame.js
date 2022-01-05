@@ -45,6 +45,7 @@ module.exports = class DevGameAPI {
         this.router.post('/api/v1/dev/deploy/game', middleware, this.apiDevDeployGame.bind(this));
 
         this.router.post('/api/v1/dev/update/game', middleware, this.apiDevUpdateGame.bind(this));
+        this.router.post('/api/v1/dev/delete/game', middleware, this.apiDevDeleteGame.bind(this));
         this.router.post('/api/v1/dev/update/game/images/:game_slug', middleware, this.apiDevUpdateGameImages.bind(this));
         return this.router;
     }
@@ -64,6 +65,32 @@ module.exports = class DevGameAPI {
         }
     }
 
+    async apiDevDeleteGame(req, res, next) {
+        let game = req.body;
+
+        if (typeof game.version == 'string')
+            game.version = parseInt(game.version);
+
+        try {
+            if (!game) {
+                throw new GeneralError("E_DEVGAME_MISSING");
+            }
+            let sessionUser = req.user;
+
+            let results = await devgame.deleteGame(game, sessionUser);
+            if (!results) {
+                throw new GeneralError("E_DEVGAME_DELETEFAILED");
+            }
+
+            if (results.ecode)
+                res.status(400);
+            res.json(results);
+        }
+        catch (e) {
+            next(e);
+        }
+    }
+
     async apiDevUpdateGameBundle(req, res, next) {
         try {
             let gameMiddleware = upload.middlewareGame('acospub', 'acospriv', this.cbImageMeta)
@@ -74,12 +101,15 @@ module.exports = class DevGameAPI {
                 return;
             }
 
-            let scaled = req.header('X-GAME-SCALED');
-            if (!scaled || scaled == 'no') {
-                scaled = false;
-            } else {
-                scaled = true;
-            }
+            let screentype = req.header('X-GAME-SCREENTYPE') || 1;
+            let resow = req.header('X-GAME-RESOW') || 4;
+            let resoh = req.header('X-GAME-RESOH') || 4;
+            let screenwidth = req.header('X-GAME-SCREENWIDTH') || 1200;
+
+            screentype = Number(screentype);
+            resow = Number(resow);
+            resoh = Number(resoh);
+            screenwidth = Number(screenwidth);
 
             let hasDB = req.header('X-GAME-HASDB');
             if (!hasDB || hasDB == 'no') {
@@ -96,7 +126,10 @@ module.exports = class DevGameAPI {
             let gameTest = {
                 game_slug: gameFull.game_slug,
                 version: gameFull.latest_version + 1,
-                scaled,
+                screentype,
+                resow,
+                resoh,
+                screenwidth,
                 db: hasDB,
                 status: 2
             }
@@ -112,7 +145,7 @@ module.exports = class DevGameAPI {
                 }
 
                 try {
-                    let gameTest = await $this.createOrUpdateGameVersion(apikey, hasDB, scaled);
+                    let gameTest = await $this.createOrUpdateGameVersion(apikey, hasDB, screentype, resow, resoh, screenwidth);
                     res.json(gameTest);
                 }
                 catch (e) {
@@ -127,13 +160,13 @@ module.exports = class DevGameAPI {
     }
 
 
-    async createOrUpdateGameVersion(apikey, hasDB, scaled) {
+    async createOrUpdateGameVersion(apikey, hasDB, screentype, resow, resoh, screenwidth) {
         let game = { apikey };
 
         let gameFull = await devgame.findGame(game);
 
 
-        let gameTest = await devgame.createGameVersion(gameFull, hasDB, scaled);
+        let gameTest = await devgame.createGameVersion(gameFull, hasDB, screentype, resow, resoh, screenwidth);
 
         return gameTest;
     }
@@ -253,6 +286,14 @@ module.exports = class DevGameAPI {
             let user = req.user;
 
             let game = await devgame.findGame({ game_slug }, user);
+            if (!game) {
+                throw new GeneralError("E_NOTAUTHORIZED");
+            }
+
+            if (game.status == 5) {
+                throw new GeneralError("E_SUSPENDED");
+            }
+
 
             let deleted = await upload.deletePreviews(game);
 
