@@ -310,7 +310,7 @@ module.exports = class DevGameAPI {
                 let files = req.files;
                 files = files.map(v => v.key.replace(game_slug + '/preview/', ''));
 
-                let response = await devgame.updatePreviewImages(game_slug, user, files);
+                let response = await devgame.updatePreviewImages(game.gameid, game_slug, user, files);
                 console.log(response.data);
 
                 res.json({ images: files });
