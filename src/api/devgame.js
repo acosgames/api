@@ -38,6 +38,7 @@ module.exports = class DevGameAPI {
 
         this.router.post('/api/v1/dev/invite/github', middleware, this.apiInviteGithub.bind(this));
 
+        this.router.get('/api/v1/dev/gametemplates', middleware, this.apiDevGameTemplates.bind(this));
         this.router.get('/api/v1/dev/games/:userid', middleware, this.apiDevGames.bind(this));
 
         this.router.get('/api/v1/dev/find/game/:gameid', middleware, this.apiDevFindGame.bind(this));
@@ -169,6 +170,26 @@ module.exports = class DevGameAPI {
         let gameTest = await devgame.createGameVersion(gameFull, hasDB, screentype, resow, resoh, screenwidth);
 
         return gameTest;
+    }
+
+
+    async apiDevGameTemplates(req, res, next) {
+
+        try {
+
+            // let sessionUser = req.session.user;
+
+            let gameTemplates = await devgame.findGameTemplates();
+            if (!gameTemplates) {
+                throw new GeneralError("E_GAMETEMPLATES_NOTFOUND");
+            }
+
+            res.json(gameTemplates);
+        }
+        catch (e) {
+            next(e);
+        }
+
     }
 
     async apiDevGames(req, res, next) {
