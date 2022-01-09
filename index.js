@@ -94,6 +94,7 @@ app.get('/acos-logo.png', (req, res, next) => {
 app.use(devgame.bundleRoutes());
 app.use(server.routes());
 app.use(game.routes());
+app.use(person.routesPublic());
 
 // const dir = `${__dirname}/public/`;
 // app.use(social.auth());

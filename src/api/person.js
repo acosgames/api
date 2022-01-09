@@ -18,12 +18,15 @@ module.exports = class PersonAPI {
         this.router = new Router();
     }
 
+    routesPublic() {
+        this.router.get('/api/v1/person/:displayname', middleware, this.apiGetPlayer);
+    }
 
     routes(middleware) {
         middleware = middleware || ((req, res, next) => { next() })
         this.router.post('/api/v1/person/create/displayname', middleware, this.apiCreateDisplayname);
 
-        this.router.get('/api/v1/person/:displayname', middleware, this.apiGetPlayer);
+
         this.router.get('/api/v1/person/', middleware, this.apiGetProfile);
 
 
