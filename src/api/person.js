@@ -15,11 +15,16 @@ module.exports = class PersonAPI {
     constructor(credentials) {
         this.credentials = credentials || credutil();
 
+        this.routerPublic = new Router();
         this.router = new Router();
     }
 
     routesPublic() {
-        this.router.get('/api/v1/person/:displayname', this.apiGetPlayer);
+        this.routerPublic.get('/api/v1/person/:displayname', this.apiGetPlayer);
+
+        return this.routerPublic;
+
+
     }
 
     routes(middleware) {
