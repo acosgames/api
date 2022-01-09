@@ -19,7 +19,7 @@ module.exports = class PersonAPI {
     }
 
     routesPublic() {
-        this.router.get('/api/v1/person/:displayname', middleware, this.apiGetPlayer);
+        this.router.get('/api/v1/person/:displayname', this.apiGetPlayer);
     }
 
     routes(middleware) {
