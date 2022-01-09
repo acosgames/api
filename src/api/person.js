@@ -67,10 +67,26 @@ module.exports = class PersonAPI {
                 throw new GeneralError('E_NOTAUTHORIZED');
 
             let user = await persons.findUser({ id: req.user.id });
-            user.token = req.cookies['X-API-KEY'];
+
+            let filteredUser = {
+                id: user.id,
+                shortid: user.shortid,
+                displayname: user.displayname,
+                email: user.email,
+                github: user.github,
+                membersince: user.membersince,
+                isdev: user.isdev,
+                ranks: user.ranks,
+                devgames: user.devgames
+            }
+
+
+
+            filteredUser.token = req.cookies['X-API-KEY'];
+            filteredUser.exp = req.user?.exp || 0;
             //user.ranks = await persons.findPlayerRanks(user.shortid);
 
-            res.json(user);
+            res.json(filteredUser);
         }
         catch (e) {
             next(e);
