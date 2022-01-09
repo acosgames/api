@@ -130,7 +130,8 @@ module.exports = class SocialAuth {
                 displayname: dbUser.displayname,
                 email: dbUser.email,
                 isdev: dbUser.isdev,
-                github: dbUser.github
+                github: dbUser.github,
+                membersince: dbUser.membersince
             }
             let token = await persons.encodeUserToken(tokenUser, JWT_PRIVATE_KEY);
             req.user = dbUser;

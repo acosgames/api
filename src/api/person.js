@@ -8,6 +8,7 @@ const PersonService = require('shared/services/person');
 const persons = new PersonService();
 
 const fs = require('fs');
+const { GeneralError } = require('shared/util/errorhandler');
 const JWT_PRIVATE_KEY = fs.readFileSync('./src/credentials/jwtRS256.key');
 
 module.exports = class PersonAPI {
@@ -22,13 +23,30 @@ module.exports = class PersonAPI {
         middleware = middleware || ((req, res, next) => { next() })
         this.router.post('/api/v1/person/create/displayname', middleware, this.apiCreateDisplayname);
 
-
-
+        this.router.get('/api/v1/person/:displayname', middleware, this.apiGetPlayer);
         this.router.get('/api/v1/person/', middleware, this.apiGetProfile);
 
 
 
         return this.router;
+    }
+
+    async apiGetPlayer(req, res, next) {
+        try {
+            let displayname = req.params?.displayname;
+            if (!displayname) {
+                throw new GeneralError('E_PLAYER_NOTFOUND');
+            }
+
+            let user = await persons.findPlayer(displayname);
+
+            res.json(user);
+        }
+        catch (e) {
+            next(e);
+            return;
+        }
+
     }
 
     async apiGetProfile(req, res, next) {
@@ -37,8 +55,14 @@ module.exports = class PersonAPI {
                 throw new GeneralError('E_NOTAUTHORIZED');
             }
 
-            req.user.token = req.cookies['X-API-KEY'];
-            res.json(req.user);
+            if (!req.user)
+                throw new GeneralError('E_NOTAUTHORIZED');
+
+            let user = await persons.findUser({ id: req.user.id });
+            user.token = req.cookies['X-API-KEY'];
+            //user.ranks = await persons.findPlayerRanks(user.shortid);
+
+            res.json(user);
         }
         catch (e) {
             next(e);
@@ -50,8 +74,6 @@ module.exports = class PersonAPI {
         let user = req.body;
 
         try {
-
-
             if (!user || !user.displayname) {
                 res.json({ ecode: "E_MISSING_DISPLAYNAME" });
                 return;
