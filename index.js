@@ -146,8 +146,11 @@ app.use('/*', (req, res, next) => {
         return next();
     }
 
-    if (isProduction)
+    if (isProduction) {
+        res.setHeader('Content-Encoding', 'gzip')
+        res.setHeader('Content-Type', 'text/html')
         res.sendFile(dir + 'index.html');
+    }
     else
         res.sendFile(dir + 'index-localhost.html');
 })
