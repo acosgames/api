@@ -7,26 +7,38 @@
         <meta name="author" content="A cup of skill" />
         <!-- <meta http-equiv="Content-Security-Policy" content="default-src ws://localhost http://localhost 'self' 'unsafe-inline' https://cdn.acos.games;" /> -->
         <title>Acos Competive Web Gaming</title>
-
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;500;700&display=swap" rel="stylesheet">
-
-        <!-- Global site tag (gtag.js) - Google Analytics -->
         <script async src="https://www.googletagmanager.com/gtag/js?id=G-HC09PY1QY2"></script>
         <script>window.dataLayer = window.dataLayer || [];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());gtag('config', 'G-HC09PY1QY2');</script>
     </head>
     <body>
         <div id="root"></div>
         <script>
-            function loadJS(url) {
-                var fileref = document.createElement('script');
-                fileref.setAttribute('type', 'text/javascript');
-                fileref.setAttribute('src', url);
-                if (typeof fileref != 'undefined') document.getElementsByTagName('body')[0].appendChild(fileref);
+            function lo(v) {
+                console.log("Latest Client Version: " + v );
+                let url = 'https://cdn.acos.games/file/acospub/static/bundle.' + v + '.js';
+                    var f = document.createElement('script');
+                    f.setAttribute('type', 'text/javascript');
+                    f.setAttribute('src', url);
+                    if (typeof f != 'undefined') document.getElementsByTagName('body')[0].appendChild(f);
             }
-            let url = '/bundle.js';
-            loadJS(url);
+            function ver() {
+                let v = localStorage.getItem('clientVersion');
+                if( v ) {
+                    lo(v);
+                    return;
+                }
+                function li (){
+                    lo(this.responseText);
+                }
+                var r = new XMLHttpRequest();
+                r.addEventListener("load", li);
+                r.open("GET", "/version");
+                r.send();
+            }
+            ver();
         </script>
     </body>
 </html>

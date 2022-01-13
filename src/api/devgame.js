@@ -270,29 +270,30 @@ module.exports = class DevGameAPI {
         cb(null, null);
     }
 
-    cbImageKey(req, file, cb) {
-        if (!req.user) {
-            let err = new GeneralError('E_NOTAUTHORIZED');
-            cb(err, 'failed')
-            return;
+    cbImageKeyOverride = (hash) =>
+        (req, file, cb) => {
+            if (!req.user) {
+                let err = new GeneralError('E_NOTAUTHORIZED');
+                cb(err, 'failed')
+                return;
+            }
+
+            var filename = file.originalname;
+            let ext = filename.split('.').pop();
+
+            if (filename == ext)
+                ext = 'jpg';
+
+            filename = genShortId(4) + '.' + ext;
+            filename = hash + '.' + ext;
+
+            let game_slug = req.body.game_slug;
+            let user = req.user;
+
+            let key = 'g/' + game_slug + '/preview/' + filename;
+
+            cb(null, key)
         }
-
-        var filename = file.originalname;
-        let ext = filename.split('.').pop();
-
-        if (filename == ext)
-            ext = 'jpg';
-
-        filename = genShortId(4) + '.' + ext;
-        filename = '1.' + ext;
-
-        let game_slug = req.body.game_slug;
-        let user = req.user;
-
-        let key = game_slug + '/preview/' + filename;
-
-        cb(null, key)
-    }
 
 
 
@@ -300,7 +301,8 @@ module.exports = class DevGameAPI {
         // let game = req.body;
 
         try {
-            let uploadMiddleware = upload.middleware('acospub', ['image/jpeg', 'image/png'], this.cbImageMeta, this.cbImageKey);
+            let hash = genShortId(6);
+            let uploadMiddleware = upload.middleware('acospub', ['image/jpeg', 'image/png'], this.cbImageMeta, this.cbImageKeyOverride(hash));
             let imageMiddleware = uploadMiddleware.array('images', 1);
 
             let game_slug = req.params.game_slug;
@@ -329,7 +331,7 @@ module.exports = class DevGameAPI {
                 let game_slug = req.body.game_slug;
                 let user = req.user;
                 let files = req.files;
-                files = files.map(v => v.key.replace(game_slug + '/preview/', ''));
+                files = files.map(v => v.key.replace('g/' + game_slug + '/preview/', ''));
 
                 let response = await devgame.updatePreviewImages(game.gameid, game_slug, user, files);
                 console.log(response.data);

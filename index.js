@@ -8,6 +8,12 @@ var FileStore = require('session-file-store')(session);
 const profiler = require('shared/util/profiler')
 const { GeneralError } = require('shared/util/errorhandler');
 
+
+const { getVersion } = require('./src/api/version');
+
+const NODE_ENV = process.env.NODE_ENV;
+const isProduction = NODE_ENV == 'production';
+
 const credutil = require('shared/util/credentials');
 const credentials = credutil();
 const PORT = process.env.PORT || credentials.platform.api.port;
@@ -17,10 +23,6 @@ const app = express()
 var httpServer = http.createServer(app);
 var fileStoreOptions = {};
 
-app.use((req, res, next) => {
-    //console.log('test');  
-    next();
-})
 
 // app.use(cors({
 //     origin: [
@@ -51,6 +53,23 @@ app.use(cookieParser('q*npasdfAm(7_A#"AvV', { 'httpOnly': true }));
 app.use(express.json());
 
 
+
+app.use(async function (req, res, next) {
+    try {
+        if (isProduction) {
+            let version = await getVersion();
+            res.setHeader('v', "" + version);
+        }
+
+        res.setHeader('charset', 'utf-8')
+    }
+    catch (e) {
+        console.error(e);
+    }
+
+    next();
+});
+
 const SocialAuth = require('./src/api/authentication/authsocial');
 const PersonAPI = require('./src/api/person');
 const DevGameAPI = require('./src/api/devgame');
@@ -62,6 +81,23 @@ const person = new PersonAPI();
 const devgame = new DevGameAPI();
 const server = new ServerAPI();
 const game = new GameAPI();
+
+app.get('/version', async (req, res, next) => {
+    try {
+        if (isProduction) {
+            let version = await getVersion();
+            res.send("" + version);
+        }
+        else {
+            res.send('0');
+        }
+        return;
+    }
+    catch (e) {
+        console.error(e);
+    }
+    res.send(0);
+})
 
 app.use('/assets', express.static(path.join(__dirname, 'public')));
 
@@ -109,7 +145,11 @@ app.use('/*', (req, res, next) => {
     if (req.path.indexOf("/api/") > -1) {
         return next();
     }
-    res.sendFile(dir + 'index.html');
+
+    if (isProduction)
+        res.sendFile(dir + 'index.html');
+    else
+        res.sendFile(dir + 'index-localhost.html');
 })
 
 app.use((err, req, res, next) => {
