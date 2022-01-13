@@ -22,13 +22,13 @@
                 if (!m || m.length == 0)
                     return;
                 if( m.type == 'load' ) { 
-                    detatchMessageEvent();
+                    de();
                     let url = `https://${urlprefix}${m.payload.game_slug}/client/client.bundle.${m.payload.version}.js`;
                     console.log(">>> Loading Client Bundle: ", url);
                     loadJS(url);
                 }
             }
-            function detatchMessageEvent() {
+            function de() {
                 window.removeEventListener('message', onMessage, false);
             }
             function at() {
