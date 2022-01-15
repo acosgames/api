@@ -121,7 +121,7 @@ app.get('/iframe*', (req, res, next) => {
 })
 
 if (isProduction) {
-    app.get('/custom-sw.js*', (req, res, next) => {
+    app.get(`/custom-sw.${clientVersion}.js*`, (req, res, next) => {
         res.setHeader('Content-Encoding', 'gzip')
         res.setHeader('Content-Type', 'text/html')
         res.sendFile(dir + `custom-sw.${clientVersion}.js`);
