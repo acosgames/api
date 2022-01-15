@@ -3,13 +3,17 @@ const cors = require('cors');
 var http = require('http')
 const cookieParser = require('cookie-parser');
 const session = require('express-session');
+const webpush = require('web-push')
+
 // const MemoryStore = require('memorystore')(session)
-var FileStore = require('session-file-store')(session);
+// var FileStore = require('session-file-store')(session);
 const profiler = require('shared/util/profiler')
 const { GeneralError } = require('shared/util/errorhandler');
 
 
 const { getVersion } = require('./src/api/version');
+
+const clientVersion = getVersion() || 0;
 
 const NODE_ENV = process.env.NODE_ENV;
 const isProduction = NODE_ENV == 'production';
@@ -21,7 +25,7 @@ const path = require('path');
 
 const app = express()
 var httpServer = http.createServer(app);
-var fileStoreOptions = {};
+// var fileStoreOptions = {};
 
 
 // app.use(cors({
@@ -52,29 +56,39 @@ var fileStoreOptions = {};
 app.use(cookieParser('q*npasdfAm(7_A#"AvV', { 'httpOnly': true }));
 app.use(express.json());
 
+webpush.setVapidDetails(credentials.webpush.contact, credentials.webpush.publickey, credentials.webpush.privatekey)
 
-
-app.use(async function (req, res, next) {
-    try {
-        if (isProduction) {
-            let version = await getVersion();
-            res.setHeader('v', "" + version);
+if (isProduction) {
+    app.use(async function (req, res, next) {
+        try {
+            res.setHeader('v', "" + clientVersion);
+            res.setHeader('charset', 'utf-8')
         }
+        catch (e) {
+            console.error(e);
+        }
+        next();
+    });
+}
+else {
+    app.use(async function (req, res, next) {
+        try {
+            res.setHeader('charset', 'utf-8')
+        }
+        catch (e) {
+            console.error(e);
+        }
+        next();
+    });
+}
 
-        res.setHeader('charset', 'utf-8')
-    }
-    catch (e) {
-        console.error(e);
-    }
-
-    next();
-});
 
 const SocialAuth = require('./src/api/authentication/authsocial');
 const PersonAPI = require('./src/api/person');
 const DevGameAPI = require('./src/api/devgame');
 const ServerAPI = require('./src/api/server');
 const GameAPI = require('./src/api/game');
+const NotificationsAPI = require('./src/api/notifications');
 
 const social = new SocialAuth();
 const person = new PersonAPI();
@@ -84,13 +98,7 @@ const game = new GameAPI();
 
 app.get('/version', async (req, res, next) => {
     try {
-        if (isProduction) {
-            let version = await getVersion();
-            res.send("" + version);
-        }
-        else {
-            res.send('0');
-        }
+        res.send("" + clientVersion);
         return;
     }
     catch (e) {
@@ -98,6 +106,7 @@ app.get('/version', async (req, res, next) => {
     }
     res.send(0);
 })
+
 
 app.use('/assets', express.static(path.join(__dirname, 'public')));
 
@@ -110,6 +119,19 @@ const dir = `${__dirname}/public/`;
 app.get('/iframe*', (req, res, next) => {
     res.sendFile(dir + 'iframe.html');
 })
+
+if (isProduction) {
+    app.get('/custom-sw.js*', (req, res, next) => {
+        res.setHeader('Content-Encoding', 'gzip')
+        res.setHeader('Content-Type', 'text/html')
+        res.sendFile(dir + `custom-sw.${clientVersion}.js`);
+    })
+}
+else {
+    app.get('/custom-sw.js*', (req, res, next) => {
+        res.sendFile(dir + 'custom-sw.js');
+    })
+}
 
 // const dir = `${__dirname}/public/`;
 app.get('/bundle.js', (req, res, next) => {
@@ -137,23 +159,29 @@ app.use(person.routesPublic());
 
 let socialAuthentication = social.auth();
 
+
+app.use(NotificationsAPI(socialAuthentication));
 app.use(person.routes(socialAuthentication));
 app.use(devgame.routes(socialAuthentication));
 app.use(game.actionRoutes(socialAuthentication));
 
-app.use('/*', (req, res, next) => {
-    if (req.path.indexOf("/api/") > -1) {
-        return next();
-    }
-
-    if (isProduction) {
+if (isProduction) {
+    app.use('/*', (req, res, next) => {
+        if (req.path.indexOf("/api/") > -1)
+            return next();
         res.setHeader('Content-Encoding', 'gzip')
         res.setHeader('Content-Type', 'text/html')
         res.sendFile(dir + 'index.html');
-    }
-    else
+    })
+}
+else {
+    app.use('/*', (req, res, next) => {
+        if (req.path.indexOf("/api/") > -1)
+            return next();
         res.sendFile(dir + 'index-localhost.html');
-})
+    })
+}
+
 
 app.use((err, req, res, next) => {
     console.log(err);

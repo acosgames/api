@@ -9,7 +9,7 @@ const versions = require('shared/model/versions.json');
 
 console.log("VERSIONS: ", versions);
 
-async function getVersion() {
+function getVersion() {
     try {
         let version = versions?.client?.version || 0;
         return version;

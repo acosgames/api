@@ -16,7 +16,6 @@
     "cors": "^2.8.5",
     "express": "^4.17.1",
     "express-session": "^1.17.1",
-    "shared": "file:../shared",
     "github-webhook-handler": "^1.0.0",
     "passport": "^0.4.1",
     "passport-facebook": "^3.0.0",
@@ -24,7 +23,9 @@
     "passport-google-oauth20": "^2.0.0",
     "passport-microsoft": "^0.1.0",
     "session-file-store": "^1.5.0",
+    "shared": "file:../shared",
     "smee-client": "^1.2.2",
-    "uWebSockets.js": "uNetworking/uWebSockets.js#v18.14.0"
+    "uWebSockets.js": "uNetworking/uWebSockets.js#v18.14.0",
+    "web-push": "^3.4.5"
   }
 }
