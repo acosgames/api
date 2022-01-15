@@ -12,6 +12,7 @@ const mysql = new MySQL();
 const PersonService = require('shared/services/person');
 const persons = new PersonService();
 const fs = require('fs');
+const { GeneralError } = require('shared/util/errorhandler');
 
 const JWT_PRIVATE_KEY = fs.readFileSync('./src/credentials/jwtRS256.key');
 
@@ -76,16 +77,42 @@ module.exports = class SocialAuth {
         });
     }
 
-    logout(req, res) {
-        // req.session.user = null;
-        // req.session.destroy();
-        res.cookie('X-API-KEY', '', { maxAge: Date.now(), httpOnly: true, SameSite: 'Strict' });
+    async logout(req, res) {
 
+        //clear the cookie, and delete the user if they were a temporary user
+        try {
+            let jwtToken = req.cookies['X-API-KEY'];
+            if (jwtToken == 'undefined' || !jwtToken) {
+                res.json({ 'status': 'success' })
+                return;
+            }
+
+            res.cookie('X-API-KEY', '', { maxAge: Date.now(), httpOnly: true, SameSite: 'Strict' });
+
+            let user = await persons.decodeUserToken(jwtToken);
+            if (user) {
+                if (!user.email || user.email.length == 0) {
+                    try {
+                        let result = persons.deleteUser(user);
+                    }
+                    catch (e) {
+                        console.error(e);
+                    }
+                }
+            }
+        }
+        catch (e) {
+            res.json({ 'status': 'success' })
+            return;
+        }
+
+        //respond with success
         res.json({ 'status': 'success' })
     }
 
     routes() {
 
+        this.router.post('/login/temp', this.apiCreateTempUser.bind(this));
 
         this.router.get('/logout', this.logout);
         this.router.get('/login/google', passport.authenticate('google', { session: false }));
@@ -105,6 +132,68 @@ module.exports = class SocialAuth {
         return this.router;
     }
 
+
+    async apiCreateTempUser(req, res, next) {
+        try {
+            let displayname = req.body?.displayname;
+
+            if (!displayname) {
+                res.json({ ecode: "E_MISSING_DISPLAYNAME" });
+                return;
+            }
+
+            if (displayname) {
+                displayname = displayname.replace(/[^A-Za-z0-9\_]/ig, '');
+
+                if (displayname.length < 3) {
+                    res.json({ ecode: "E_DISPLAYNAME_TOOSHORT" });
+                    return;
+                }
+            }
+
+            let existingUser = await persons.findUser({ displayname }, true);
+            if (existingUser) {
+                throw new GeneralError('E_PERSON_DUPENAME');
+            }
+
+            let user = await persons.createUser({ displayname });
+
+            let tokenUser = {
+                id: user.id,
+                shortid: user.shortid,
+                displayname: user.displayname,
+                email: user.email,
+                isdev: user.isdev,
+                github: user.github,
+                membersince: user.membersince
+            }
+
+            let token = await persons.encodeUserToken(tokenUser, JWT_PRIVATE_KEY);
+            let decodedToken = await persons.decodeUserToken(token);
+
+            let filteredUser = {
+                id: user.id,
+                shortid: user.shortid,
+                displayname: user.displayname,
+                email: user.email || null,
+                github: user.github || null,
+                membersince: user.membersince,
+                isdev: user.isdev,
+                ranks: [],
+                devgames: [],
+                token,
+                exp: decodedToken.exp
+            }
+
+            res.cookie('X-API-KEY', token, { httpOnly: true, SameSite: 'Strict' })
+            res.json(filteredUser);
+        }
+        catch (e) {
+            next(e);
+        }
+    }
+
+
     async redirect(req, res) {
         let websiteurl = creds.platform.website.url;
 
@@ -114,6 +203,25 @@ module.exports = class SocialAuth {
 
         // console.log(req.session.passport);
         let user = req.user;
+
+
+        try {
+            let jwtToken = req.cookies['X-API-KEY'];
+            if (jwtToken) {
+                let tokenUser = await persons.decodeUserToken(jwtToken);
+                if (!(tokenUser?.email)) {
+
+                    user = Object.assign({}, user, tokenUser);
+                    let result = await persons.updateUser(user);
+                }
+            }
+        }
+        catch (e) {
+            res.redirect(`${websiteurl}/login/accountexists`)
+            // res.json({ ecode: 'E_INVALID_USER_CREATE' });
+            return;
+        }
+
 
         try {
             let dbUser = await persons.findOrCreateUser(user);
