@@ -87,7 +87,7 @@ module.exports = class SocialAuth {
                 return;
             }
 
-            res.cookie('X-API-KEY', '', { maxAge: Date.now(), httpOnly: true, SameSite: 'Strict' });
+            res.cookie('X-API-KEY', '', { maxAge: Date.now(), httpOnly: true, SameSite: 'Strict', overwrite: true });
 
             let user = await persons.decodeUserToken(jwtToken);
             if (user) {
@@ -185,7 +185,7 @@ module.exports = class SocialAuth {
                 exp: decodedToken.exp
             }
 
-            res.cookie('X-API-KEY', token, { httpOnly: true, SameSite: 'Strict' })
+            res.cookie('X-API-KEY', token, { httpOnly: true, SameSite: 'Strict', overwrite: true })
             res.json(filteredUser);
         }
         catch (e) {
@@ -217,6 +217,7 @@ module.exports = class SocialAuth {
             }
         }
         catch (e) {
+            console.log(e);
             res.redirect(`${websiteurl}/login/accountexists`)
             // res.json({ ecode: 'E_INVALID_USER_CREATE' });
             return;
@@ -245,7 +246,7 @@ module.exports = class SocialAuth {
             req.user = dbUser;
 
 
-            res.cookie('X-API-KEY', token, { httpOnly: true, SameSite: 'Strict' })
+            res.cookie('X-API-KEY', token, { httpOnly: true, SameSite: 'Strict', overwrite: true })
 
             if (!dbUser.displayname || dbUser.displayname.length == 0 || dbUser.displayname == dbUser.apikey) {
                 //res.setHeader('Set-Cookie', 'X-API-KEY=' + dbUser.apikey + '; HttpOnly');
