@@ -116,11 +116,12 @@ app.use('/.well-known', express.static(path.join(__dirname, 'public/.well-known'
 app.use(social.routes());
 
 const dir = `${__dirname}/public/`;
-app.get('/iframe*', (req, res, next) => {
-    res.sendFile(dir + 'iframe.html');
-})
 
 if (isProduction) {
+    app.get('/iframe*', (req, res, next) => {
+        res.sendFile(dir + 'iframe.html');
+    })
+
     app.get(`/custom-sw.${clientVersion}.js*`, (req, res, next) => {
         res.setHeader('Content-Encoding', 'gzip')
         res.setHeader('Content-Type', 'application/javascript')
@@ -128,6 +129,10 @@ if (isProduction) {
     })
 }
 else {
+    app.get('/iframe*', (req, res, next) => {
+        res.sendFile(dir + 'iframe-localhost.html');
+    })
+
     app.get('/custom-sw.js*', (req, res, next) => {
         res.sendFile(dir + 'custom-sw.js');
     })
