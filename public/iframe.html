@@ -2,25 +2,13 @@
 <html lang="en">
     <head>
         <meta charset="utf-8" />
-        <title>ACOS - Client Simulator</title>
+        <title>Acos-Client Simulator</title>
         <meta name="description" content="ACOS Client Simulator" />
         <meta name="author" content="A Cup of Skill" />
         <meta
             http-equiv="Content-Security-Policy"
             content="default-src https://fonts.gstatic.com https://fonts.googleapis.com https://cdn.acos.games 'unsafe-inline'"
         />
-        <script>
-        
-            XMLHttpRequest = null;
-            //move it out of scope, so they can't use `this`
-            var sendGameAction = window.parent.postMessage;//(msg, origin);
-            window.sendGameAction =sendGameAction;
-            // var postMessage = 
-            window.top = window;
-            window.frameElement = null;
-            window.parent = window;
-            // window.parent.postMessage = postMessage;
-        </script>
     </head>
     <body>
         <div id="root"></div>
@@ -50,45 +38,8 @@
                 fileref.setAttribute('src', url);
                 document.body.appendChild(fileref);
                 setTimeout(()=>{
-                    console.log(sendGameAction)
-                    sendGameAction({ type:'loaded' }, '*');
+                    window.parent.postMessage({ type:'loaded' }, '*');
                 },1)
-
-                var nestedframe = document.createElement('iframe');
-                nestedframe.setAttribute('srcdoc', `
-                <html>
-                    <head>
-                    <\/head>
-                    <body>
-                        <h1>Hello</h1>
-                        <script>
-                            var cookies = document.cookie.split(';');
-        var ret = '';
-        for(var i = 1; i <= cookies.length; i++) {
-            ret += i + ' - ' + cookies[i - 1] + "<br>";
-        }
-        fetch('/api/v1/person')
-                .then(response => response.json())
-                .then(data => console.log(data))
-                .catch(console.error);
-
-            console.log("cookies: ", ret);
-                            alert('hi');console.log("nested: ", window.top.document)
-                        <\/script>
-                    <\/body>
-                <\/html>
-                `);
-                document.body.appendChild(nestedframe);
-                // let parent = window.parent.document; 
-                // console.log("parent doc: ",parent);
-                // window.parent.localStorage.setItem("test", "hello world");
-                // alert('hi');
-
-                // fetch('/api/v1/person')
-                // .then(response => response.json())
-                // .then(data => console.log(data))
-                // .catch(console.error);
-            //    window.location.href ='https://www.google.com/';
             }
             at();
         </script>
