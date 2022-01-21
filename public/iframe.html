@@ -34,14 +34,44 @@
                 window.addEventListener('message', onMessage, false);
             }
             function loadJS(url) {
-                var fileref = document.createElement('script');
-                fileref.setAttribute('src', url);
-                document.body.appendChild(fileref);
-                setTimeout(()=>{
-                    window.parent.postMessage({ type:'loaded' }, '*');
-                },1)
+                loadScript(url, function(path, status) {
+                    if( status == 'ok')
+                        setTimeout(()=>{
+                            window.parent.postMessage({ type:'loaded' }, '*');
+                        },1)
+                });
             }
             at();
+            function loadScript(path, callback) {
+                var done = false;
+                var scr = document.createElement('script');
+                scr.onload = handleLoad;
+                scr.onreadystatechange = handleReadyStateChange;
+                scr.onerror = handleError;
+                scr.src = path;
+                document.body.appendChild(scr);
+                function handleLoad() {
+                    if (!done) {
+                        done = true;
+                        callback(path, "ok");
+                    }
+                }
+                function handleReadyStateChange() {
+                    var state;
+                    if (!done) {
+                        state = scr.readyState;
+                        if (state === "complete") {
+                            handleLoad();
+                        }
+                    }
+                }
+                function handleError() {
+                    if (!done) {
+                        done = true;
+                        callback(path, "error");
+                    }
+                }
+            }
         </script>
     </body>
 </html>
