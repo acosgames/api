@@ -173,10 +173,12 @@ app.use(devgame.routes(socialAuthentication));
 app.use(game.actionRoutes(socialAuthentication));
 
 app.use('/sitemap.txt', (req, res, next) => {
+    res.setHeader('Content-Type', 'text/plain')
     renderSITEMAP(req, res);
 })
 
 app.use('/robots.txt', (req, res, next) => {
+    res.setHeader('Content-Type', 'text/plain')
     renderRobotsTxt(req, res);
 })
 
