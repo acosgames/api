@@ -36,9 +36,10 @@ async function getGameMeta(urlpath) {
 
         let page = {
             url: 'https://acos.games' + urlpath,
-            title: 'ACOS - ' + game.name,
+            title: game.name + ' on ACOS',
             description: game.longdesc || defaultDescription,
             abstract: game.shortdesc || defaultAbstract,
+            keywords: 'Web Games,Web Dev,Game Dev,Serverless,Competitive,Ranking,Leaderboard,Item Store,Timers,Free Hosting',
             author: game.displayname,
             image_src: `https://cdn.acos.games/file/acospub/g/${game_slug}/preview/${game.preview_images}`,
             canonical: 'https://acos.games' + urlpath,
@@ -104,7 +105,7 @@ async function renderHTML(req, res) {
                 <meta name="author" content="${page.author}" />
                 <meta name="description" content="${page.description}">
                 <meta name="abstract" content="${page.abstract}">
-                <meta name="keywords" content="${page.keywords}}">
+                <meta name="keywords" content="${page.keywords}">
                 <link rel="image_src" href="${page.image_src}">
                 <link rel="canonical" href="${page.canonical}">
                 <meta property="og:type" content="game">
