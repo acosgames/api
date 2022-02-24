@@ -25,6 +25,8 @@ const path = require('path');
 
 const app = express()
 var httpServer = http.createServer(app);
+
+const { renderHTML, renderSITEMAP, renderRobotsTxt } = require('./src/api/seo');
 // var fileStoreOptions = {};
 
 
@@ -170,22 +172,34 @@ app.use(person.routes(socialAuthentication));
 app.use(devgame.routes(socialAuthentication));
 app.use(game.actionRoutes(socialAuthentication));
 
+app.use('/sitemap.txt', (req, res, next) => {
+    renderSITEMAP(req, res);
+})
+
+app.use('/robots.txt', (req, res, next) => {
+    renderRobotsTxt(req, res);
+})
+
 if (isProduction) {
     app.use('/*', (req, res, next) => {
         if (req.path.indexOf("/api/") > -1)
             return next();
         res.setHeader('Content-Encoding', 'gzip')
         res.setHeader('Content-Type', 'text/html')
-        res.sendFile(dir + 'index.html');
+        // res.sendFile(dir + 'index.html');
+        renderHTML(req, res);
     })
 }
 else {
     app.use('/*', (req, res, next) => {
         if (req.path.indexOf("/api/") > -1)
             return next();
+        // renderHTML(req, res);
         res.sendFile(dir + 'index-localhost.html');
     })
 }
+
+
 
 
 app.use((err, req, res, next) => {
