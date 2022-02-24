@@ -184,7 +184,7 @@ if (isProduction) {
     app.use('/*', (req, res, next) => {
         if (req.path.indexOf("/api/") > -1)
             return next();
-        res.setHeader('Content-Encoding', 'gzip')
+        // res.setHeader('Content-Encoding', 'gzip')
         res.setHeader('Content-Type', 'text/html')
         // res.sendFile(dir + 'index.html');
         renderHTML(req, res);
