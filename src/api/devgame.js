@@ -46,6 +46,7 @@ module.exports = class DevGameAPI {
         this.router.post('/api/v1/dev/deploy/game', middleware, this.apiDevDeployGame.bind(this));
 
         this.router.post('/api/v1/dev/update/game', middleware, this.apiDevUpdateGame.bind(this));
+        this.router.post('/api/v1/dev/update/gameapikey', middleware, this.apiDevUpdateGameAPIKey.bind(this));
         this.router.post('/api/v1/dev/delete/game', middleware, this.apiDevDeleteGame.bind(this));
         this.router.post('/api/v1/dev/update/game/images/:game_slug', middleware, this.apiDevUpdateGameImages.bind(this));
         return this.router;
@@ -237,7 +238,29 @@ module.exports = class DevGameAPI {
     }
 
 
+    async apiDevUpdateGameAPIKey(req, res, next) {
+        let game = req.body;
 
+        try {
+            if (!game) {
+                throw new GeneralError("E_DEVGAME_MISSING");
+            }
+            let sessionUser = req.user;
+
+            let pushedGame = await devgame.updateGameAPIKey(game, sessionUser);
+            if (!pushedGame) {
+                throw new GeneralError("E_DEV_APIKEYFAILED");
+            }
+
+            if (pushedGame.ecode)
+                res.status(400);
+            res.json(pushedGame);
+        }
+        catch (e) {
+            next(e);
+        }
+
+    }
 
     async apiDevUpdateGame(req, res, next) {
         let game = req.body;
