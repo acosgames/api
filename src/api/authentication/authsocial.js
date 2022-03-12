@@ -218,9 +218,16 @@ module.exports = class SocialAuth {
         }
         catch (e) {
             console.log(e);
-            res.redirect(`${websiteurl}/login/accountexists`)
-            // res.json({ ecode: 'E_INVALID_USER_CREATE' });
-            return;
+            if (e.message == 'jwt expired') {
+
+                //let it create new token by going to code below
+            }
+            else {
+                res.redirect(`${websiteurl}/login/accountexists`)
+                // res.json({ ecode: 'E_INVALID_USER_CREATE' });
+                return;
+            }
+
         }
 
 

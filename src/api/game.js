@@ -33,6 +33,8 @@ module.exports = class GameAPI {
     actionRoutes(middleware) {
         middleware = middleware || ((req, res, next) => { next() })
         this.actionRouter.get('/api/v1/game/person/:game_slug', middleware, this.apiFindGamePerson.bind(this));
+        this.actionRouter.get('/api/v1/game/lb/:game_slug', middleware, this.apiFindGameLeaderboard.bind(this));
+        this.actionRouter.get('/api/v1/game/lbhs/:game_slug', middleware, this.apiFindGameLeaderboardHighscore.bind(this));
         this.actionRouter.post('/api/v1/game/report', middleware, this.apiReportGame.bind(this));
         this.actionRouter.post('/api/v1/game/rate', middleware, this.apiRateGame.bind(this));
 
@@ -40,6 +42,37 @@ module.exports = class GameAPI {
         return this.actionRouter;
     }
 
+    async apiFindGameLeaderboard(req, res, next) {
+        let g = null;
+        try {
+            let user = req.user;
+            let game_slug = req.params.game_slug;
+            g = await game.findGameLeaderboard(game_slug, user.shortid, user.displayname);
+        }
+        catch (e) {
+            next(e);
+            return;
+        }
+
+        res.json(g);
+        return;
+    }
+
+    async apiFindGameLeaderboardHighscore(req, res, next) {
+        let g = null;
+        try {
+            let user = req.user;
+            let game_slug = req.params.game_slug;
+            g = await game.findGameLeaderboardHighscore(game_slug, user.shortid, user.displayname);
+        }
+        catch (e) {
+            next(e);
+            return;
+        }
+
+        res.json(g);
+        return;
+    }
     async apiFindGamePerson(req, res, next) {
         let g = null;
         try {
