@@ -151,6 +151,16 @@ module.exports = class GameAPI {
                 games = await game.findGames();
                 storage.setGameList(games);
             }
+            else {
+                let queueCounts = await game.getAllGamesQueueCount();
+                for (var i = 0; i < games.length; i++) {
+                    let g = games[i];
+                    if (typeof queueCounts[g.game_slug] !== 'undefined')
+                        g.queueCount = queueCounts[g.game_slug];
+                    else
+                        g.queueCount = 0;
+                }
+            }
         }
         catch (e) {
             next(e);
