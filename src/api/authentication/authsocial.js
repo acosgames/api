@@ -47,6 +47,34 @@ module.exports = class SocialAuth {
         });
     }
 
+    authIfAvailable() {
+        return (async (req, res, next) => {
+
+            let jwtToken = req.cookies['X-API-KEY'];
+            if (jwtToken == 'undefined' || !jwtToken) {
+                jwtToken = req.header('X-API-KEY');
+                if (!jwtToken) {
+                    next();
+                    return;
+                }
+            }
+
+            try {
+                let user = await persons.decodeUserToken(jwtToken);
+                if (!user) {
+                    next();
+                    return;
+                }
+
+                req.user = user;
+            }
+            catch (e) {
+            }
+
+            next();
+        });
+    }
+
     auth() {
         return (async (req, res, next) => {
 

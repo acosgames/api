@@ -157,11 +157,11 @@ app.get('/acos-logo-combined.png', (req, res, next) => {
     res.sendFile(dir + '/acos-logo-combined.png');
 })
 
-
+let socialAuthenticationIfAvailable = social.authIfAvailable();
 
 app.use(devgame.bundleRoutes());
 app.use(server.routes());
-app.use(game.routes());
+app.use(game.routes(socialAuthenticationIfAvailable));
 app.use(person.routesPublic());
 
 // const dir = `${__dirname}/public/`;

@@ -25,7 +25,8 @@ module.exports = class GameAPI {
         this.router.get('/api/v1/games', middleware, this.apiFindGames.bind(this));
         this.router.get('/api/v1/game/:game_slug', middleware, this.apiFindGame.bind(this));
 
-
+        this.actionRouter.get('/api/v1/game/lb/:game_slug', middleware, this.apiFindGameLeaderboard.bind(this));
+        this.actionRouter.get('/api/v1/game/lbhs/:game_slug', middleware, this.apiFindGameLeaderboardHighscore.bind(this));
 
         return this.router;
     }
@@ -33,8 +34,7 @@ module.exports = class GameAPI {
     actionRoutes(middleware) {
         middleware = middleware || ((req, res, next) => { next() })
         this.actionRouter.get('/api/v1/game/person/:game_slug', middleware, this.apiFindGamePerson.bind(this));
-        this.actionRouter.get('/api/v1/game/lb/:game_slug', middleware, this.apiFindGameLeaderboard.bind(this));
-        this.actionRouter.get('/api/v1/game/lbhs/:game_slug', middleware, this.apiFindGameLeaderboardHighscore.bind(this));
+
         this.actionRouter.post('/api/v1/game/report', middleware, this.apiReportGame.bind(this));
         this.actionRouter.post('/api/v1/game/rate', middleware, this.apiRateGame.bind(this));
 
@@ -47,7 +47,7 @@ module.exports = class GameAPI {
         try {
             let user = req.user;
             let game_slug = req.params.game_slug;
-            g = await game.findGameLeaderboard(game_slug, user.shortid, user.displayname);
+            g = await game.findGameLeaderboard(game_slug, user?.shortid, user?.displayname);
         }
         catch (e) {
             next(e);
@@ -63,7 +63,7 @@ module.exports = class GameAPI {
         try {
             let user = req.user;
             let game_slug = req.params.game_slug;
-            g = await game.findGameLeaderboardHighscore(game_slug, user.shortid, user.displayname);
+            g = await game.findGameLeaderboardHighscore(game_slug, user?.shortid, user?.displayname);
         }
         catch (e) {
             next(e);
