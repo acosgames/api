@@ -180,6 +180,16 @@ app.use('/sitemap.txt', (req, res, next) => {
     renderSITEMAP(req, res);
 })
 
+app.use('./well-known//microsoft-identity-association.json', (req, res, next) => {
+    res.json({
+        "associatedApplications": [
+            {
+                "applicationId": "dc1dc7b1-7e6d-4b1b-8325-c69f153dc45d"
+            }
+        ]
+    });
+})
+
 app.use('/robots.txt', (req, res, next) => {
     res.setHeader('Content-Type', 'text/plain')
     renderRobotsTxt(req, res);

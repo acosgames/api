@@ -68,6 +68,10 @@ module.exports = class PersonAPI {
 
             let user = await persons.findUser({ id: req.user.id });
 
+            if (!user)
+                throw new GeneralError('E_NOTAUTHORIZED');
+
+
             let filteredUser = {
                 id: user.id,
                 shortid: user.shortid,
@@ -96,7 +100,7 @@ module.exports = class PersonAPI {
 
     async apiCreateDisplayname(req, res, next) {
         let user = req.body;
-
+        let filteredUser = {};
         try {
             if (!user || !user.displayname) {
                 res.json({ ecode: "E_MISSING_DISPLAYNAME" });
@@ -127,6 +131,19 @@ module.exports = class PersonAPI {
             }
             let token = await persons.encodeUserToken(tokenUser, JWT_PRIVATE_KEY);
 
+
+            filteredUser = {
+                id: user.id,
+                shortid: sessionUser.shortid,
+                displayname: user.displayname,
+                email: sessionUser.email,
+                github: sessionUser.github,
+                membersince: sessionUser.membersince,
+                isdev: sessionUser.isdev,
+                ranks: sessionUser.ranks,
+                devgames: sessionUser.devgames
+            }
+
             res.cookie('X-API-KEY', token, { httpOnly: true, SameSite: 'Strict', overwrite: true })
         }
         catch (e) {
@@ -134,7 +151,7 @@ module.exports = class PersonAPI {
             return;
         }
 
-        res.json(user);
+        res.json(filteredUser);
         return;
     }
 

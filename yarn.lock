@@ -589,24 +589,15 @@
   dependencies:
     "passport-oauth2" "1.x.x"
 
-"passport-microsoft@^0.1.0":
-  "integrity" "sha512-0giBDgE1fnR5X84zJZkQ11hnKVrzEgViwRO6RGsormK9zTxFQmN/UHMTDbIpvhk989VqALewB6Pk1R5vNr3GHw=="
-  "resolved" "https://registry.npmjs.org/passport-microsoft/-/passport-microsoft-0.1.0.tgz"
-  "version" "0.1.0"
+"passport-microsoft@^1.0.0":
+  "integrity" "sha512-L1JHeCbSObSZZXiG7jU2KoKie6nzZLwGt38HXz1GasKrsCQdOnf5kH8ltV4BWNUfBL2Pt1csWn1iuBSerprrcg=="
+  "resolved" "https://registry.npmjs.org/passport-microsoft/-/passport-microsoft-1.0.0.tgz"
+  "version" "1.0.0"
   dependencies:
-    "passport-oauth2" "1.2.0"
-    "pkginfo" "0.2.x"
+    "passport-oauth2" "1.6.1"
+    "pkginfo" "0.4.x"
 
-"passport-oauth2@1.2.0":
-  "integrity" "sha1-SWE6PsqFx6HmW/EBnitrgKEMisI="
-  "resolved" "https://registry.npmjs.org/passport-oauth2/-/passport-oauth2-1.2.0.tgz"
-  "version" "1.2.0"
-  dependencies:
-    "oauth" "0.9.x"
-    "passport-strategy" "1.x.x"
-    "uid2" "0.0.x"
-
-"passport-oauth2@1.x.x":
+"passport-oauth2@1.6.1", "passport-oauth2@1.x.x":
   "integrity" "sha512-ZbV43Hq9d/SBSYQ22GOiglFsjsD1YY/qdiptA+8ej+9C1dL1TVB+mBE5kDH/D4AJo50+2i8f4bx0vg4/yDDZCQ=="
   "resolved" "https://registry.npmjs.org/passport-oauth2/-/passport-oauth2-1.6.1.tgz"
   "version" "1.6.1"
@@ -640,10 +631,10 @@
   "resolved" "https://registry.npmjs.org/pause/-/pause-0.0.1.tgz"
   "version" "0.0.1"
 
-"pkginfo@0.2.x":
-  "integrity" "sha1-cjnEKl72wwuPMoQ52bn/cQQkkPg="
-  "resolved" "https://registry.npmjs.org/pkginfo/-/pkginfo-0.2.3.tgz"
-  "version" "0.2.3"
+"pkginfo@0.4.x":
+  "integrity" "sha512-8xCNE/aT/EXKenuMDZ+xTVwkT8gsoHN2z/Q29l80u0ppGEXVvsKRzNMbtKhg8LS8k1tJLAHHylf6p4VFmP6XUQ=="
+  "resolved" "https://registry.npmjs.org/pkginfo/-/pkginfo-0.4.1.tgz"
+  "version" "0.4.1"
 
 "proxy-addr@~2.0.5":
   "integrity" "sha512-dh/frvCBVmSsDYzw6n926jv974gddhkFPfiN8hPOi30Wax25QZyZEGveluCgliBnqmuM+UJmBErbAUFIoDbjOw=="

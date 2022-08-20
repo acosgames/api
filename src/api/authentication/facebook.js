@@ -20,7 +20,8 @@ module.exports = class FacebookAuth {
             callbackURL: this.credentials.facebookauth.redirect_uri,  //same URI as registered in Google console portal
             clientID: this.credentials.facebookauth.client_id, //replace with copied value from Google console
             clientSecret: this.credentials.facebookauth.client_secret,
-            scope: this.credentials.facebookauth.scope
+            scope: this.credentials.facebookauth.scope,
+            profileFields: this.credentials.facebookauth.fields || []
         },
             self.strategyCallback
         )
@@ -30,7 +31,7 @@ module.exports = class FacebookAuth {
 
     async strategyCallback(accessToken, refreshToken, profile, done) {
         try {
-            let email = profile.id; //profile object has the user info
+            let email = profile._json.email || profile?.emails[0]?.value || profile.id; //profile object has the user info
 
             //let [user] = await db('users').select(['id', 'name', 'email']).where('email', user_email); //check whether user exist in database
             let redirect_url = "";
