@@ -149,6 +149,10 @@ app.get('/favicon.ico', (req, res, next) => {
     res.sendFile(dir + 'favicon.ico');
 })
 
+app.get('/play-favicon.ico', (req, res, next) => {
+    res.sendFile(dir + 'play-favicon.ico');
+})
+
 app.get('/acos-logo.png', (req, res, next) => {
     res.sendFile(dir + '/acos-logo.png');
 })
