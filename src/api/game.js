@@ -25,6 +25,8 @@ module.exports = class GameAPI {
         this.router.get('/api/v1/games', middleware, this.apiFindGames.bind(this));
         this.router.get('/api/v1/game/:game_slug', middleware, this.apiFindGame.bind(this));
 
+        this.router.get('/api/v1/game/replays/:game_slug', middleware, this.apiFindGameReplays.bind(this));
+
         this.actionRouter.get('/api/v1/game/lb/:game_slug', middleware, this.apiFindGameLeaderboard.bind(this));
         this.actionRouter.get('/api/v1/game/lbhs/:game_slug', middleware, this.apiFindGameLeaderboardHighscore.bind(this));
 
@@ -171,6 +173,20 @@ module.exports = class GameAPI {
         return;
     }
 
+    async apiFindGameReplays(req, res, next) {
+        let replays = null;
+        try {
+            let game_slug = req.params.game_slug;
+            replays = await game.findGameReplays(game_slug);
+        }
+        catch (e) {
+            next(e);
+            return;
+        }
+
+        res.json(replays);
+        return;
+    }
     async apiFindGame(req, res, next) {
         let g = null;
         try {
