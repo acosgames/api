@@ -132,7 +132,7 @@ if (isProduction) {
 }
 else {
     app.get('/iframe*', (req, res, next) => {
-        res.sendFile(dir + 'iframe-localhost.html');
+        res.sendFile(dir + 'iframe.html');
     })
 
     app.get('/custom-sw.js*', (req, res, next) => {
