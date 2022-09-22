@@ -103,15 +103,23 @@ module.exports = class DevGameAPI {
                 return;
             }
 
+            let gameSettings = req.header('X-GAME-SETTINGS') || {};
+            try {
+                gameSettings = JSON.parse(gameSettings);
+            }
+            catch (e) {
+                console.error(e);
+            }
+
             let screentype = req.header('X-GAME-SCREENTYPE') || 1;
             let resow = req.header('X-GAME-RESOW') || 4;
             let resoh = req.header('X-GAME-RESOH') || 4;
             let screenwidth = req.header('X-GAME-SCREENWIDTH') || 1200;
 
-            screentype = Number(screentype);
-            resow = Number(resow);
-            resoh = Number(resoh);
-            screenwidth = Number(screenwidth);
+            screentype = Number(gameSettings.screentype);
+            resow = Number(gameSettings.resow);
+            resoh = Number(gameSettings.resoh);
+            screenwidth = Number(gameSettings.screenwidth);
 
             let hasDB = req.header('X-GAME-HASDB');
             if (!hasDB || hasDB == 'no') {
@@ -148,7 +156,25 @@ module.exports = class DevGameAPI {
 
                 try {
                     let gameTest = await $this.createOrUpdateGameVersion(apikey, hasDB, screentype, resow, resoh, screenwidth);
-                    res.json(gameTest);
+
+                    $this.validateSettings(gameSettings)
+
+                    let gameWithSetings = { apikey };
+                    if ('minplayers' in gameSettings)
+                        gameWithSetings.minplayers = gameSettings.minplayers
+                    if ('maxplayers' in gameSettings)
+                        gameWithSetings.maxplayers = gameSettings.maxplayers
+                    if ('minteams' in gameSettings)
+                        gameWithSetings.minteams = gameSettings.minteams
+                    if ('maxteams' in gameSettings)
+                        gameWithSetings.maxteams = gameSettings.maxteams
+                    if ('teams' in gameSettings) {
+                        gameWithSetings.teams = gameSettings.teams;
+                    }
+
+                    let gameResult = await devgame.updateGame(gameWithSetings);
+                    let merged = Object.assign({}, gameTest, gameResult);
+                    res.json(merged);
                 }
                 catch (e) {
                     next(new GeneralError("E_UPLOAD_FAILED"));
@@ -159,6 +185,139 @@ module.exports = class DevGameAPI {
             console.error(e);
             next(new GeneralError("E_UPLOAD_FAILED"));
         }
+    }
+
+    validateSettings(s) {
+
+        let dirty = false;
+
+        if (!('minplayers' in s) || !Number.isInteger(s.minplayers)) {
+            s.minplayers = 1;
+            dirty = true;
+        }
+        // else if (s.minplayers > s.maxplayers) {
+        //     s.minplayers = s.maxplayers;
+        //     dirty = true;
+        // } 
+        else if (s.minplayers < 0) {
+            s.minplayers = 0;
+            dirty = true;
+        }
+        if (!('maxplayers' in s) || !Number.isInteger(s.maxplayers)) {
+            s.maxplayers = 1;
+            dirty = true;
+        } else if (s.maxplayers < s.minplayers) {
+            s.maxplayers = s.minplayers;
+            dirty = true;
+        } else if (s.maxplayers < 0) {
+            s.maxplayers = 0;
+            dirty = true;
+        }
+
+        if (!('minteams' in s) || !Number.isInteger(s.minteams)) {
+            s.minteams = 0;
+            dirty = true;
+        }
+        // else if (s.minteams > s.maxteams) {
+        //     s.minteams = s.maxteams;
+        //     dirty = true;
+        // }
+        else if (s.minteams < 0) {
+            s.minteams = 0;
+            dirty = true;
+        }
+
+        if (!('maxteams' in s) || !Number.isInteger(s.maxteams)) {
+            s.maxteams = 0;
+            dirty = true;
+        }
+        else if (s.maxteams < s.minteams) {
+            s.maxteams = s.minteams;
+            dirty = true;
+        }
+        else if (s.maxteams < 0) {
+            s.maxteams = 0;
+            dirty = true;
+        }
+
+        if (!('teams' in s) || !Array.isArray(s.teams)) {
+            s.teams = [];
+            dirty = true;
+        }
+        else if (s.maxteams > 0 && s.teams.length < s.maxteams) {
+            let missingCount = s.maxteams - s.teams.length;
+            for (let i = 0; i < missingCount; i++) {
+                s.teams.push({
+                    team_name: 'Team ' + (s.teams.length + i + 1),
+                    team_slug: 'team_' + (s.teams.length + i + 1),
+                    minplayers: 1,
+                    maxplayers: 1,
+                    team_order: s.teams.length,
+                    color: '#000000'
+                })
+                dirty = true;
+            }
+        }
+        else if (s.teams.length > s.maxteams) {
+            let overCount = s.teams.length - s.maxteams
+            for (let i = 0; i < overCount; i++) {
+                s.teams.pop();
+                dirty = true;
+            }
+        }
+
+        if ('teams' in s) {
+            if (s.teams.length > 0) {
+                for (let team of s.teams) {
+
+                    if (!('minplayers' in team) || !Number.isInteger(team.minplayers)) {
+                        team.minplayers = 1;
+                        dirty = true;
+                    }
+                    else if (team.minplayers < 0) {
+                        team.minplayers = 0;
+                        dirty = true;
+                    }
+                    if (!('maxplayers' in team) || !Number.isInteger(team.maxplayers)) {
+                        team.maxplayers = 1;
+                        dirty = true;
+                    } else if (team.maxplayers < team.minplayers) {
+                        team.maxplayers = team.minplayers;
+                        dirty = true;
+                    } else if (team.maxplayers < 0) {
+                        team.maxplayers = 0;
+                        dirty = true;
+                    }
+
+
+                }
+            }
+        }
+
+        if (!('screentype' in s) || !Number.isInteger(s.screentype)) {
+            s.screentype = 3;
+            dirty = true;
+        }
+        if (!('resow' in s) || !Number.isInteger(s.resow)) {
+            s.resow = 4;
+            dirty = true;
+        }
+        if (!('resoh' in s) || !Number.isInteger(s.resoh)) {
+            s.resoh = 3;
+            dirty = true;
+        }
+        if (!('screenwidth' in s) || !Number.isInteger(s.screenwidth)) {
+            s.screenwidth = 800;
+            dirty = true;
+        }
+
+
+        if (dirty) {
+            // this.updateGameSettings(s);
+            return false;
+        }
+
+        return true;
     }
 
 
