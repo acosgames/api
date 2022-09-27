@@ -29,6 +29,8 @@ module.exports = class DevAuth {
             res.json({ ecode: 'E_NOTAUTHORIZED' });
             return;
         }
+        req.game = game;
+        req.res = res;
 
         next();
     }

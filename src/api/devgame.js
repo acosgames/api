@@ -19,6 +19,11 @@ const gh = require('shared/services/github');
 const DevAuth = require('./authentication/authdev');
 const devauth = new DevAuth();
 
+const multer = require('multer')
+const ACOSStorage = require('./ACOSStorage');
+const ACOSUpload = multer({ storage: ACOSStorage({}) })
+const ACOSMiddleware = ACOSUpload.any();//.fields([{ name: 'client', maxCount: 1 }, { name: 'server', maxCount: 1 }, { name: 'db', maxCount: 1 }])
+
 module.exports = class DevGameAPI {
     constructor(credentials) {
         this.credentials = credentials || credutil();
@@ -28,7 +33,7 @@ module.exports = class DevGameAPI {
     }
 
     bundleRoutes() {
-        this.bundleRouter.post('/api/v1/dev/update/game/bundle/', devauth.auth, this.apiDevUpdateGameBundle.bind(this));
+        this.bundleRouter.post('/api/v1/dev/update/game/bundle/', devauth.auth, ACOSMiddleware, this.apiDevUpdateGameBundle.bind(this));
         return this.bundleRouter;
     }
 
@@ -95,6 +100,42 @@ module.exports = class DevGameAPI {
 
     async apiDevUpdateGameBundle(req, res, next) {
         try {
+
+
+            console.log("req.body", req.body);
+            console.log("req.file", req.file);
+            console.log("Upload is completed", req.files);
+
+            let json = req.game;
+            let jsonStr = JSON.stringify(json);
+            res.write(jsonStr);
+            res.end();
+
+            // let zipped
+            //     = zlib.createGzip();
+            // // var cnt = 0;
+
+
+            // console.log("Transformed: ", file.fieldname);
+            // file.stream.on('data', (chunk) => {
+            //     // console.log("chunk[" + cnt + "]", chunk);
+            //     // cnt++;
+            //     //prepend the iframe top html
+            //     // if (cnt == 1)
+            //     //     zipped.write(iframeTop);
+            //     //write the JS into the middle
+            //     zipped.write(chunk);
+            // });
+
+            // file.stream.on('end', () => {
+            //     //append the iframe bottom html
+            //     // zipped.write(iframeBottom);
+            //     // var zipped = new stream.PassThrough();
+            //     // cb(null, zipped);
+            // });
+
+            return;
+
             let gameMiddleware = upload.middlewareGame('acospub', 'acospriv', this.cbImageMeta)
 
             let apikey = req.header('X-GAME-API-KEY');
@@ -111,15 +152,15 @@ module.exports = class DevGameAPI {
                 console.error(e);
             }
 
-            let screentype = req.header('X-GAME-SCREENTYPE') || 1;
-            let resow = req.header('X-GAME-RESOW') || 4;
-            let resoh = req.header('X-GAME-RESOH') || 4;
-            let screenwidth = req.header('X-GAME-SCREENWIDTH') || 1200;
+            // let screentype = req.header('X-GAME-SCREENTYPE') || 1;
+            // let resow = req.header('X-GAME-RESOW') || 4;
+            // let resoh = req.header('X-GAME-RESOH') || 4;
+            // let screenwidth = req.header('X-GAME-SCREENWIDTH') || 1200;
 
-            screentype = Number(gameSettings.screentype);
-            resow = Number(gameSettings.resow);
-            resoh = Number(gameSettings.resoh);
-            screenwidth = Number(gameSettings.screenwidth);
+            let screentype = Number(gameSettings.screentype);
+            let resow = Number(gameSettings.resow);
+            let resoh = Number(gameSettings.resoh);
+            let screenwidth = Number(gameSettings.screenwidth);
 
             let hasDB = req.header('X-GAME-HASDB');
             if (!hasDB || hasDB == 'no') {
