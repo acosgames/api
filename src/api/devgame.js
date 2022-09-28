@@ -20,9 +20,11 @@ const DevAuth = require('./authentication/authdev');
 const devauth = new DevAuth();
 
 const multer = require('multer')
-const ACOSStorage = require('./ACOSStorage');
-const ACOSUpload = multer({ storage: ACOSStorage({}) })
-const ACOSMiddleware = ACOSUpload.any();//.fields([{ name: 'client', maxCount: 1 }, { name: 'server', maxCount: 1 }, { name: 'db', maxCount: 1 }])
+const S3Upload = require('./ACOSStorage');
+
+// const ACOSStorage = require('./ACOSStorage');
+// const ACOSUpload = multer({ storage: ACOSStorage({}) })
+// const ACOSMiddleware = ACOSUpload.any();//.fields([{ name: 'client', maxCount: 1 }, { name: 'server', maxCount: 1 }, { name: 'db', maxCount: 1 }])
 
 module.exports = class DevGameAPI {
     constructor(credentials) {
@@ -33,7 +35,7 @@ module.exports = class DevGameAPI {
     }
 
     bundleRoutes() {
-        this.bundleRouter.post('/api/v1/dev/update/game/bundle/', devauth.auth, ACOSMiddleware, this.apiDevUpdateGameBundle.bind(this));
+        this.bundleRouter.post('/api/v1/dev/update/game/bundle/', devauth.auth, this.apiDevUpdateGameBundle.bind(this));
         return this.bundleRouter;
     }
 
@@ -98,16 +100,124 @@ module.exports = class DevGameAPI {
         }
     }
 
+
     async apiDevUpdateGameBundle(req, res, next) {
         try {
+            let apikey = req.header('X-GAME-API-KEY');
+            if (!apikey || !req.game) {
+                res.json({ ecode: 'E_NOTAUTHORIZED' });
+                return;
+            }
+
+            let filesizes = req.header('X-GAME-FILESIZES');
+            if (filesizes) {
+
+                let parts = filesizes.split(';');
+                let sizes = {};
+                for (const part of parts) {
+                    if (part.length == 0) {
+                        continue;
+                    }
+
+                    let keyval = part.split('=');
+                    sizes[keyval[0]] = keyval[1];
+                }
+                req.filesizes = sizes;
+            }
 
 
-            console.log("req.body", req.body);
-            console.log("req.file", req.file);
-            console.log("Upload is completed", req.files);
+            let gameSettings = req.header('X-GAME-SETTINGS') || '{}';
+            try {
+                gameSettings = JSON.parse(gameSettings);
+            }
+            catch (e) {
+                console.error(e);
+            }
+
+            let hasDB = req.header('X-GAME-HASDB');
+            if (!hasDB || hasDB == 'no') {
+                hasDB = false;
+            } else {
+                hasDB = true;
+            }
+
+            let screentype = Number(gameSettings.screentype);
+            let resow = Number(gameSettings.resow);
+            let resoh = Number(gameSettings.resoh);
+            let screenwidth = Number(gameSettings.screenwidth);
+
+
+            let gameFull = req.game;
+            let gameTest = {
+                game_slug: gameFull.game_slug,
+                version: gameFull.latest_version + 1,
+                screentype,
+                resow,
+                resoh,
+                screenwidth,
+                db: hasDB,
+                status: 2
+            }
+
+            req.game = gameTest;
+
+
+            try {
+                let s3responses = await S3Upload(req, res, function (err, data) {
+
+                    if (err) {
+                        res.write(JSON.stringify({ error: err }) + '\n');
+                        return;
+                    }
+                    if (data.key && !data.loaded && !data.exists)
+                        console.log('S3 Upload Completed: ', data.key);
+                    if (data.Key)
+                        delete data.Key;
+                    data.key = data.key.split('/').pop();
+                    res.write(JSON.stringify(data) + '\n');
+                });
+            }
+            catch (e2) {
+                res.write(JSON.stringify({ error: e2 }) + '\n');
+                res.end();
+                return;
+            }
+
+            // console.log("req.body", req.body);
+            // console.log("req.file", req.file);
+
+            console.log("Upload is completed for ", req.game.game_slug, 'at version', req.game.latest_version);
+
+
+
+
+
+
+            gameTest = await this.createOrUpdateGameVersion(apikey, hasDB, screentype, resow, resoh, screenwidth);
+
+            this.validateSettings(gameSettings)
+
+            let gameWithSetings = { apikey };
+            if ('minplayers' in gameSettings)
+                gameWithSetings.minplayers = gameSettings.minplayers
+            if ('maxplayers' in gameSettings)
+                gameWithSetings.maxplayers = gameSettings.maxplayers
+            if ('minteams' in gameSettings)
+                gameWithSetings.minteams = gameSettings.minteams
+            if ('maxteams' in gameSettings)
+                gameWithSetings.maxteams = gameSettings.maxteams
+            if ('teams' in gameSettings) {
+                gameWithSetings.teams = gameSettings.teams;
+            }
+
+            let gameResult = await devgame.updateGame(gameWithSetings);
+            let merged = Object.assign({}, gameTest, gameResult);
+            // res.json(merged);
+
+            merged.game_slug = req.game.game_slug;
 
             let json = req.game;
-            let jsonStr = JSON.stringify(json);
+            let jsonStr = JSON.stringify(merged);
             res.write(jsonStr);
             res.end();
 
@@ -136,91 +246,77 @@ module.exports = class DevGameAPI {
 
             return;
 
-            let gameMiddleware = upload.middlewareGame('acospub', 'acospriv', this.cbImageMeta)
 
-            let apikey = req.header('X-GAME-API-KEY');
-            if (!apikey) {
-                res.json({ ecode: 'E_UPLOADFAILED' });
-                return;
-            }
-
-            let gameSettings = req.header('X-GAME-SETTINGS') || {};
-            try {
-                gameSettings = JSON.parse(gameSettings);
-            }
-            catch (e) {
-                console.error(e);
-            }
 
             // let screentype = req.header('X-GAME-SCREENTYPE') || 1;
             // let resow = req.header('X-GAME-RESOW') || 4;
             // let resoh = req.header('X-GAME-RESOH') || 4;
             // let screenwidth = req.header('X-GAME-SCREENWIDTH') || 1200;
 
-            let screentype = Number(gameSettings.screentype);
-            let resow = Number(gameSettings.resow);
-            let resoh = Number(gameSettings.resoh);
-            let screenwidth = Number(gameSettings.screenwidth);
+            // let screentype = Number(gameSettings.screentype);
+            // let resow = Number(gameSettings.resow);
+            // let resoh = Number(gameSettings.resoh);
+            // let screenwidth = Number(gameSettings.screenwidth);
 
-            let hasDB = req.header('X-GAME-HASDB');
-            if (!hasDB || hasDB == 'no') {
-                hasDB = false;
-            } else {
-                hasDB = true;
-            }
+            // let hasDB = req.header('X-GAME-HASDB');
+            // if (!hasDB || hasDB == 'no') {
+            //     hasDB = false;
+            // } else {
+            //     hasDB = true;
+            // }
 
-            // let apikey = '6394232D38D14DB2AC5B09E329CFD00E';
+            // // let apikey = '6394232D38D14DB2AC5B09E329CFD00E';
 
-            var $this = this;
+            // var $this = this;
 
-            let gameFull = await devgame.findGame({ apikey });
-            let gameTest = {
-                game_slug: gameFull.game_slug,
-                version: gameFull.latest_version + 1,
-                screentype,
-                resow,
-                resoh,
-                screenwidth,
-                db: hasDB,
-                status: 2
-            }
+            // let gameFull = await devgame.findGame({ apikey });
+            // let gameTest = {
+            //     game_slug: gameFull.game_slug,
+            //     version: gameFull.latest_version + 1,
+            //     screentype,
+            //     resow,
+            //     resoh,
+            //     screenwidth,
+            //     db: hasDB,
+            //     status: 2
+            // }
 
-            req.game = gameTest;
+            // req.game = gameTest;
 
-            gameMiddleware(req, res, async function (err) {
-                if (err) {
-                    console.error(err);
-                    // An unknown error occurred when uploading.
-                    next(new GeneralError("E_UPLOAD_FAILED"));
-                    return;
-                }
+            // gameMiddleware(req, res, async function (err) {
+            //     if (err) {
+            //         console.error(err);
+            //         // An unknown error occurred when uploading.
+            //         next(new GeneralError("E_UPLOAD_FAILED"));
+            //         return;
+            //     }
 
-                try {
-                    let gameTest = await $this.createOrUpdateGameVersion(apikey, hasDB, screentype, resow, resoh, screenwidth);
+            //     try {
+            //         let gameTest = await $this.createOrUpdateGameVersion(apikey, hasDB, screentype, resow, resoh, screenwidth);
 
-                    $this.validateSettings(gameSettings)
+            //         $this.validateSettings(gameSettings)
 
-                    let gameWithSetings = { apikey };
-                    if ('minplayers' in gameSettings)
-                        gameWithSetings.minplayers = gameSettings.minplayers
-                    if ('maxplayers' in gameSettings)
-                        gameWithSetings.maxplayers = gameSettings.maxplayers
-                    if ('minteams' in gameSettings)
-                        gameWithSetings.minteams = gameSettings.minteams
-                    if ('maxteams' in gameSettings)
-                        gameWithSetings.maxteams = gameSettings.maxteams
-                    if ('teams' in gameSettings) {
-                        gameWithSetings.teams = gameSettings.teams;
-                    }
+            //         let gameWithSetings = { apikey };
+            //         if ('minplayers' in gameSettings)
+            //             gameWithSetings.minplayers = gameSettings.minplayers
+            //         if ('maxplayers' in gameSettings)
+            //             gameWithSetings.maxplayers = gameSettings.maxplayers
+            //         if ('minteams' in gameSettings)
+            //             gameWithSetings.minteams = gameSettings.minteams
+            //         if ('maxteams' in gameSettings)
+            //             gameWithSetings.maxteams = gameSettings.maxteams
+            //         if ('teams' in gameSettings) {
+            //             gameWithSetings.teams = gameSettings.teams;
+            //         }
 
-                    let gameResult = await devgame.updateGame(gameWithSetings);
-                    let merged = Object.assign({}, gameTest, gameResult);
-                    res.json(merged);
-                }
-                catch (e) {
-                    next(new GeneralError("E_UPLOAD_FAILED"));
-                }
-            })
+            //         let gameResult = await devgame.updateGame(gameWithSetings);
+            //         let merged = Object.assign({}, gameTest, gameResult);
+            //         res.json(merged);
+            //     }
+            //     catch (e) {
+            //         next(new GeneralError("E_UPLOAD_FAILED"));
+            //     }
+            // })
         }
         catch (e) {
             console.error(e);
