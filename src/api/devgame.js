@@ -109,6 +109,21 @@ module.exports = class DevGameAPI {
                 return;
             }
 
+            try {
+                let apikeyParts = apikey.split('.');
+                if (apikeyParts.length == 2) {
+                    let game_slug = apikeyParts[0];
+                    if (req.game.game_slug != game_slug) {
+                        res.json({ error: `[ERROR] game_slug provided (${game_slug}) does not match game from apikey (${req.game.game_slug}). Did you copy the correct API Key?`, ecode: "E_GAMESLUG_MISMATCH" });
+                        return;
+                    }
+                }
+            }
+            catch (e2) {
+                console.error(e2);
+            }
+
+
             let filesizes = req.header('X-GAME-FILESIZES');
             if (filesizes) {
 
