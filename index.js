@@ -157,6 +157,11 @@ app.get('/acos-logo.png', (req, res, next) => {
     res.sendFile(dir + '/acos-logo.png');
 })
 
+
+app.get('/acos-logo-large.png', (req, res, next) => {
+    res.sendFile(dir + '/acos-logo-large.png');
+})
+
 app.get('/acos-logo-combined.png', (req, res, next) => {
     res.sendFile(dir + '/acos-logo-combined.png');
 })
