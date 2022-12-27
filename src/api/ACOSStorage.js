@@ -90,7 +90,7 @@ function S3Upload(req, res, cb) {
                 ContentType = mimeType;
                 ACL = 'public-read';
                 isGzip = false;
-                Metadata = { fieldName, filename, version: game.version, 'Content-Type': ContentType };
+                Metadata = { fieldName, filename, version: '' + game.version, 'Content-Type': ContentType };
             }
 
 
