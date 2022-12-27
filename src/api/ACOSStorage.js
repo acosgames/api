@@ -90,7 +90,7 @@ function S3Upload(req, res, cb) {
                 ContentType = mimeType;
                 ACL = 'public-read';
                 isGzip = false;
-                Metadata = { fieldName, filename, version: '' + game.version, 'Content-Type': ContentType };
+                Metadata = { 'Content-Type': ContentType };
             }
 
 
@@ -186,7 +186,7 @@ function S3Upload(req, res, cb) {
 
             uploaders[filename] = uploader;
 
-            if (Metadata) {
+            if (isGzip) {
                 let zipped = zlib.createGzip();
                 fileStream.pipe(zipped).pipe(pass);
             } else {
