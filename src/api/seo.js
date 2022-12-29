@@ -131,7 +131,7 @@ async function renderHTML(req, res) {
                 <!-- <meta http-equiv="Content-Security-Policy" content="default-src ws://localhost http://localhost 'self' 'unsafe-inline' https://cdn.acos.games;" /> -->
                 <link rel="preconnect" href="https://fonts.googleapis.com">
                 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-                <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;500;700&display=swap" rel="stylesheet">
+                <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,500;0,600;0,800;1,500&display=swap" rel="stylesheet">
                 <script async src="https://www.googletagmanager.com/gtag/js?id=G-HC09PY1QY2"></script>
                 <script>window.dataLayer = window.dataLayer || [];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());gtag('config', 'G-HC09PY1QY2');</script>
                 <style>
