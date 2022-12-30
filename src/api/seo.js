@@ -72,7 +72,7 @@ function getPageMeta(urlpath) {
         abstract: 'Play or develop your own competitive online web game on the ACOS serverless platform.',
         author: 'A cup of skill',
         keywords: 'Web Games,Web Dev,Game Dev,Serverless,Competitive,Ranking,Leaderboard,Item Store,Timers,Free Hosting',
-        image_src: 'https://cdn.acos.games/file/acospub/acos-logo.png',
+        image_src: 'https://cdn.acos.games/file/acospub/acos-logo-standalone4.png',
         canonical: 'https://acos.games' + urlpath,
         site_name: 'ACOS',
         update_time: formattedDate,
