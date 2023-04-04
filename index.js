@@ -112,6 +112,8 @@ app.get('/version', async (req, res, next) => {
 
 app.use('/assets', express.static(path.join(__dirname, 'public')));
 
+app.use('/privacypolicy', express.static(path.join(__dirname, 'public/privacypolicy.html')));
+
 app.use('/.well-known', express.static(path.join(__dirname, 'public/.well-known'), { dotfiles: 'allow' }));
 
 

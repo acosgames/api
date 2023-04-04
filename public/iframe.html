@@ -87,6 +87,7 @@
                     loadJS(url)
                 }
                 else if( m.type == 'pause' ) {
+                    return;
                     paused = true;
                     console.log("Attempting to pause timeouts and intervals ", Object.keys(acosTimeouts).length, Object.keys(acosIntervals).length);
                     for(let key in acosTimeouts) {
@@ -112,6 +113,7 @@
 
                 }
                 else if( m.type == 'unpause' ) {
+                    return;
                     paused = false;
                     console.log("Attempting to unpause timeouts and intervals ", Object.keys(acosTimeouts).length, Object.keys(acosIntervals).length);
                     
