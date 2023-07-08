@@ -135,7 +135,7 @@ async function renderHTML(req, res) {
                 <script async src="https://www.googletagmanager.com/gtag/js?id=G-HC09PY1QY2"></script>
                 <script>window.dataLayer = window.dataLayer || [];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());gtag('config', 'G-HC09PY1QY2');</script>
                 <style>
-                    html, body { background-color: #044588}
+                    html, body { background-color: #060606}
                     #root { width:100%; height:100%; display:flex; flex-direction: column; justify-items: center; align-items: center;}
                     .loadingTxt{color:white; display:block; margin-top:0rem; margin-bottom:2rem; font-size:36px; font-weight:bold; font-family:'Arial'}
                     .ldr-1 .ball1 {  animation: grow 0.8s infinite ease-in-out; animation-delay: 0.08s; z-index:1; }
