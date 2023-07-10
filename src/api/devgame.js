@@ -4,8 +4,8 @@ const { Router } = require('express');
 const MySQL = require('shared/services/mysql.js');
 const mysql = new MySQL();
 
-const UploadFileService = require('shared/services/uploadfile');
-const upload = new UploadFileService();
+// const UploadFileService = require('shared/services/uploadfile');
+// const upload = new UploadFileService();
 
 const DevGameService = require('shared/services/devgame');
 const devgame = new DevGameService();
@@ -19,8 +19,8 @@ const gh = require('shared/services/github');
 const DevAuth = require('./authentication/authdev');
 const devauth = new DevAuth();
 
-const multer = require('multer')
-const S3Upload = require('./ACOSStorage');
+// const multer = require('multer')
+const { S3UploadGameBundles, S3UploadGameImage, deletePreviews } = require('./ACOSStorage');
 
 // const ACOSStorage = require('./ACOSStorage');
 // const ACOSUpload = multer({ storage: ACOSStorage({}) })
@@ -178,7 +178,7 @@ module.exports = class DevGameAPI {
 
 
             try {
-                let s3responses = await S3Upload(req, res, function (err, data) {
+                let s3responses = await S3UploadGameBundles(req, res, function (err, data) {
 
                     if (err) {
                         res.write(JSON.stringify({ error: err }) + '\n');
@@ -635,12 +635,10 @@ module.exports = class DevGameAPI {
         // let game = req.body;
 
         try {
-            let hash = genShortId(6);
-            let uploadMiddleware = upload.middleware('acospub', ['image/jpeg', 'image/png'], this.cbImageMeta, this.cbImageKeyOverride(hash));
-            let imageMiddleware = uploadMiddleware.array('images', 1);
-
             let game_slug = req.params.game_slug;
             let user = req.user;
+            let hash = genShortId(6);
+
 
             let game = await devgame.findGame({ game_slug }, user);
             if (!game) {
@@ -651,28 +649,59 @@ module.exports = class DevGameAPI {
                 throw new GeneralError("E_SUSPENDED");
             }
 
+            req.game = game;
+            let deleted = await deletePreviews(game);
+            // let uploadMiddleware = upload.middleware('acospub', ['image/jpeg', 'image/png'], this.cbImageMeta, this.cbImageKeyOverride(hash));
+            // let imageMiddleware = uploadMiddleware.array('images', 1);
+            let s3responses = await S3UploadGameImage(req, res, async function (err, data) {
 
-            let deleted = await upload.deletePreviews(game);
-
-            imageMiddleware(req, res, async function (err) {
                 if (err) {
-                    console.error(err);
-                    // An unknown error occurred when uploading.
-                    next(new GeneralError("E_UPLOAD_FAILED"));
+                    res.write(JSON.stringify({ error: err }) + '\n');
                     return;
                 }
+                if (data.key && !data.loaded && !data.exists)
+                    console.log('S3 Upload Completed: ', data.key);
+                if (data.Key)
+                    delete data.Key;
+                data.key = data.key.split('/').pop();
+                // res.write(JSON.stringify(data) + '\n');
 
-                let game_slug = req.body.game_slug;
-                let user = req.user;
-                let files = req.files;
-                files = files.map(v => v.key.replace('g/' + game_slug + '/preview/', ''));
 
-                let response = await devgame.updatePreviewImages(game.gameid, game_slug, user, files);
-                console.log(response.data);
 
-                res.json({ images: files });
-                return
-            })
+            });
+
+
+            let files = req.files;
+            files = files.map(v => v.replace('g/' + game_slug + '/preview/', ''));
+
+            let response = await devgame.updatePreviewImages(game.gameid, game_slug, user, files);
+            console.log(response.data);
+
+            res.json({ images: files });
+
+
+
+
+
+            // imageMiddleware(req, res, async function (err) {
+            //     if (err) {
+            //         console.error(err);
+            //         // An unknown error occurred when uploading.
+            //         next(new GeneralError("E_UPLOAD_FAILED"));
+            //         return;
+            //     }
+
+            //     let game_slug = req.body.game_slug;
+            //     let user = req.user;
+            //     let files = req.files;
+            //     files = files.map(v => v.key.replace('g/' + game_slug + '/preview/', ''));
+
+            //     let response = await devgame.updatePreviewImages(game.gameid, game_slug, user, files);
+            //     console.log(response.data);
+
+            //     res.json({ images: files });
+            //     return
+            // })
         }
         catch (e) {
             console.error(e);
