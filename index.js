@@ -71,8 +71,8 @@ const webpackHotMiddleware = require("webpack-hot-middleware");
 const webpackPublicPath = path.resolve(process.cwd(), 'public/');
 console.log("webpackPublicPath", webpackPublicPath);
 app.use(webpackDevMiddleware(compiler, {
-    publicPath: webpackPublicPath + '/',
-    writeToDisk: true,
+    publicPath: '/public',
+    writeToDisk: false,
     stats: { colors: true }
 }));
 
@@ -167,19 +167,19 @@ else {
 }
 
 // const dir = `${__dirname}/public/`;
-app.get('/bundle.js', (req, res, next) => {
-    res.sendFile(dir + 'bundle.js');
-})
+// app.get('/bundle.js', (req, res, next) => {
+//     res.sendFile(dir + 'bundle.js');
+// })
 
 // app.get('/main.js', (req, res, next) => {
 //     res.sendFile(dir + 'main.js');
 // })
-app.get('/client.js', (req, res, next) => {
-    res.sendFile(dir + 'client.js');
-})
-app.get('/hot.js', (req, res, next) => {
-    res.sendFile(dir + 'hot.js');
-})
+// app.get('/client.js', (req, res, next) => {
+//     res.sendFile(dir + 'client.js');
+// })
+// app.get('/hot.js', (req, res, next) => {
+//     res.sendFile(dir + 'hot.js');
+// })
 
 
 app.get('/favicon.ico', (req, res, next) => {
