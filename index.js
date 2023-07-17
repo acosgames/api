@@ -26,6 +26,10 @@ const path = require('path');
 const app = express()
 var httpServer = http.createServer(app);
 
+
+
+
+
 const { renderHTML, renderSITEMAP, renderRobotsTxt } = require('./src/api/seo');
 // var fileStoreOptions = {};
 
@@ -54,6 +58,25 @@ const { renderHTML, renderSITEMAP, renderRobotsTxt } = require('./src/api/seo');
 
 
 // })
+
+
+
+const webpack = require('webpack');
+const webpackConfig = require('./webpack/dev.config');
+const compiler = webpack(webpackConfig);
+
+
+const webpackDevMiddleware = require('webpack-dev-middleware');
+const webpackHotMiddleware = require("webpack-hot-middleware");
+const webpackPublicPath = path.resolve(process.cwd(), 'public/');
+console.log("webpackPublicPath", webpackPublicPath);
+app.use(webpackDevMiddleware(compiler, {
+    publicPath: webpackPublicPath + '/',
+    writeToDisk: true,
+    stats: { colors: true }
+}));
+
+app.use(webpackHotMiddleware(compiler));
 
 app.use(cookieParser('q*npasdfAm(7_A#"AvV', { 'httpOnly': true }));
 app.use(express.json());
@@ -110,6 +133,7 @@ app.get('/version', async (req, res, next) => {
 })
 
 
+app.use('/public', express.static(path.join(__dirname, 'public')));
 app.use('/assets', express.static(path.join(__dirname, 'public')));
 
 app.use('/privacypolicy', express.static(path.join(__dirname, 'public/privacypolicy.html')));
@@ -146,6 +170,17 @@ else {
 app.get('/bundle.js', (req, res, next) => {
     res.sendFile(dir + 'bundle.js');
 })
+
+// app.get('/main.js', (req, res, next) => {
+//     res.sendFile(dir + 'main.js');
+// })
+app.get('/client.js', (req, res, next) => {
+    res.sendFile(dir + 'client.js');
+})
+app.get('/hot.js', (req, res, next) => {
+    res.sendFile(dir + 'hot.js');
+})
+
 
 app.get('/favicon.ico', (req, res, next) => {
     res.sendFile(dir + 'favicon.ico');
