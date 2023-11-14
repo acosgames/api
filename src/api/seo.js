@@ -41,7 +41,7 @@ async function getGameMeta(urlpath) {
             abstract: game.shortdesc || defaultAbstract,
             keywords: 'Web Games,Web Dev,Game Dev,Serverless,Competitive,Ranking,Leaderboard,Item Store,Timers,Free Hosting',
             author: game.displayname,
-            image_src: `https://cdn.acos.games/file/acospub/g/${game_slug}/preview/${game.preview_images}`,
+            image_src: `https://assets.acos.games/g/${game_slug}/preview/${game.preview_images}`,
             canonical: 'https://acos.games' + urlpath,
             site_name: 'ACOS',
             update_time: game.tsupdate.toISOString(),
@@ -72,7 +72,7 @@ function getPageMeta(urlpath) {
         abstract: 'Play or develop your own competitive online web game on the ACOS serverless platform.',
         author: 'A cup of skill',
         keywords: 'Web Games,Web Dev,Game Dev,Serverless,Competitive,Ranking,Leaderboard,Item Store,Timers,Free Hosting',
-        image_src: 'https://cdn.acos.games/file/acospub/acos-logo-standalone5.png',
+        image_src: 'https://assets.acos.games/acos-logo-standalone5.png',
         canonical: 'https://acos.games' + urlpath,
         site_name: 'ACOS',
         update_time: formattedDate,
@@ -146,9 +146,9 @@ async function renderHTML(req, res) {
                 </style>
             </head>
             <body>
-                <div id="root"><img src="https://cdn.acos.games/file/acospub/acos-logo-large.png" /><br /><br />
+                <div id="root"><img src="https://assets.acos.games/acos-logo-large.png" /><br /><br />
                 <div className="ldr-1"><div className="ball1"></div><div className="ball2"></div><div className="ball3"></div><div className="ball4"></div></div>
-                <script src='https://cdn.acos.games/file/acospub/static/bundle.${CLIENTVERSION.client.version}.js'></script>
+                <script src='https://assets.acos.games/static/bundle.${CLIENTVERSION.client.version}.js'></script>
             </body>
         </html>`
 

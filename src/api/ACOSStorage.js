@@ -58,7 +58,7 @@ function S3UploadGameBundles(req, res, cb) {
             let ContentLength = req.filesizes[filename] || 0;
             var fileExt = filename.split('.').pop();
             let Metadata = null;
-            let isGzip = true;
+            let isGzip = false;
             mimeType = mimetypes['.' + fileExt] || 'application/octet-stream'
             if (fieldName == 'server') {
                 filename = 'server.bundle.' + game.version + '.js';
@@ -66,7 +66,7 @@ function S3UploadGameBundles(req, res, cb) {
                 Bucket = SERVER_BUCKET;
                 ContentType = 'application/javascript';
                 ACL = 'private';
-                Metadata = { fieldName, filename, 'Content-Type': ContentType, 'Content-Encoding': 'gzip', 'b2-content-encoding': 'gzip' }
+                Metadata = { fieldName, filename, 'Content-Type': ContentType, }
             }
             else if (fieldName == 'db') {
                 filename = "server.db." + game.version + '.json';
@@ -74,7 +74,7 @@ function S3UploadGameBundles(req, res, cb) {
                 Bucket = SERVER_BUCKET;
                 ContentType = 'application/json';
                 ACL = 'private';
-                Metadata = { fieldName, filename, 'Content-Type': ContentType, 'Content-Encoding': 'gzip', 'b2-content-encoding': 'gzip' }
+                Metadata = { fieldName, filename, 'Content-Type': ContentType, }
             }
             else if (fieldName == 'client') {
                 filename = 'client.bundle.' + game.version + '.js';
@@ -82,7 +82,7 @@ function S3UploadGameBundles(req, res, cb) {
                 Bucket = CLIENT_BUCKET;
                 ContentType = 'application/javascript';
                 ACL = 'public-read';
-                Metadata = { fieldName, filename, 'Content-Type': ContentType, 'Content-Encoding': 'gzip', 'b2-content-encoding': 'gzip' }
+                Metadata = { fieldName, filename, 'Content-Type': ContentType, }
             }
             else {
                 //filename = filename;
@@ -210,7 +210,7 @@ async function uploadByStreamGzip(Bucket, Key, data) {
                 Body: data,
                 ACL: 'public-read',
                 ContentType: 'application/javascript',
-                ContentEncoding: 'gzip'
+                // ContentEncoding: 'gzip'
             }
             var options = { partSize: 10 * 1024 * 1024, queueSize: 1 };
 

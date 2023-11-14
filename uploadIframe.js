@@ -16,7 +16,7 @@ function run() {
 
 
     Readable.from([data])
-        .pipe(zlib.createGzip())
+        // .pipe(zlib.createGzip())
         .pipe(fs.createWriteStream(filepath))
         .on("error", (error) => {
             // handle error
