@@ -106,7 +106,7 @@ module.exports = class GameAPI {
             let user = req.user;
             let shortid = user.shortid;
 
-            if (reportType < 1 || reportType > 3) {
+            if (reportType < 0 || reportType > 3) {
                 next(new GeneralError('E_INVALIDTYPE'));
                 return;
             }
