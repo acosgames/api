@@ -150,11 +150,17 @@ if (isProduction) {
         res.sendFile(dir + 'iframe.html');
     })
 
-    app.get(`/custom-sw.${clientVersion}.js*`, (req, res, next) => {
+    app.get(`/custom-sw.js*`, (req, res, next) => {
         res.setHeader('Content-Encoding', 'gzip')
         res.setHeader('Content-Type', 'application/javascript')
         res.sendFile(dir + `custom-sw.${clientVersion}.js`);
     })
+
+    // app.get(`/custom-sw.${clientVersion}.js*`, (req, res, next) => {
+    //     res.setHeader('Content-Encoding', 'gzip')
+    //     res.setHeader('Content-Type', 'application/javascript')
+    //     res.sendFile(dir + `custom-sw.${clientVersion}.js`);
+    // })
 }
 else {
     app.get('/iframe*', (req, res, next) => {
