@@ -143,11 +143,74 @@ async function renderHTML(req, res) {
                     .ldr-1 .ball2 {  animation: grow1 0.8s infinite ease-in-out;  animation-delay: 0.13s; }
                     .ldr-1 .ball3 {  animation: grow2 0.8s infinite ease-in-out; animation-delay: 0.18s; }
                     .ldr-1 .ball4 {  animation: grow3 0.8s infinite ease-in-out; animation-delay: 0.22s;  }
+                    .loader {
+                        font-size: 10px;
+                        margin: 50px auto;
+                        text-indent: -9999em;
+                        width: 11em;
+                        height: 11em;
+                        border-radius: 50%;
+                        background: #ffffff;
+                        background: -moz-linear-gradient(left, #ffffff 10%, rgba(255, 255, 255, 0) 42%);
+                        background: -webkit-linear-gradient(left, #ffffff 10%, rgba(255, 255, 255, 0) 42%);
+                        background: -o-linear-gradient(left, #ffffff 10%, rgba(255, 255, 255, 0) 42%);
+                        background: -ms-linear-gradient(left, #ffffff 10%, rgba(255, 255, 255, 0) 42%);
+                        background: linear-gradient(to right, #ffffff 10%, rgba(255, 255, 255, 0) 42%);
+                        position: relative;
+                        -webkit-animation: load3 1.4s infinite linear;
+                        animation: load3 1.4s infinite linear;
+                        -webkit-transform: translateZ(0);
+                        -ms-transform: translateZ(0);
+                        transform: translateZ(0);
+                      }
+                      .loader:before {
+                        width: 50%;
+                        height: 50%;
+                        background: #ffffff;
+                        border-radius: 100% 0 0 0;
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        content: '';
+                      }
+                      .loader:after {
+                        background: #0dc5c1;
+                        width: 75%;
+                        height: 75%;
+                        border-radius: 50%;
+                        content: '';
+                        margin: auto;
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        bottom: 0;
+                        right: 0;
+                      }
+                      @-webkit-keyframes load3 {
+                        0% {
+                          -webkit-transform: rotate(0deg);
+                          transform: rotate(0deg);
+                        }
+                        100% {
+                          -webkit-transform: rotate(360deg);
+                          transform: rotate(360deg);
+                        }
+                      }
+                      @keyframes load3 {
+                        0% {
+                          -webkit-transform: rotate(0deg);
+                          transform: rotate(0deg);
+                        }
+                        100% {
+                          -webkit-transform: rotate(360deg);
+                          transform: rotate(360deg);
+                        }
+                      }
                 </style>
             </head>
             <body>
-                <div id="root"><img src="https://assets.acos.games/acos-logo-large.png" /><br /><br />
-                <div className="ldr-1"><div className="ball1"></div><div className="ball2"></div><div className="ball3"></div><div className="ball4"></div></div>
+            <div class="loader">Loading...</div>
+                
                 <script src='https://assets.acos.games/static/bundle.${CLIENTVERSION.client.version}.js'></script>
             </body>
         </html>`

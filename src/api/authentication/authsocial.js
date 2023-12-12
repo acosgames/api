@@ -121,7 +121,7 @@ module.exports = class SocialAuth {
             if (user) {
                 if (!user.email || user.email.length == 0) {
                     try {
-                        let result = persons.deleteUser(user);
+                        let result = await persons.deleteUser(user);
                     }
                     catch (e) {
                         console.error(e);
@@ -144,17 +144,17 @@ module.exports = class SocialAuth {
 
         this.router.get('/logout', this.logout);
         this.router.get('/login/google', passport.authenticate('google', { session: false }));
-        this.router.get('/oauth/google', passport.authenticate('google', { failureRedirect: '/', session: false }), this.redirect);
+        this.router.get('/oauth/google', passport.authenticate('google', { failureRedirect: '/', session: false }), this.redirectSocial);
 
         this.router.get('/login/microsoft', passport.authenticate('microsoft', { session: false }));
-        this.router.get('/oauth/microsoft', passport.authenticate('microsoft', { failureRedirect: '/', session: false }), this.redirect);
+        this.router.get('/oauth/microsoft', passport.authenticate('microsoft', { failureRedirect: '/', session: false }), this.redirectSocial);
 
         this.router.get('/login/facebook', passport.authenticate('facebook', { session: false }));
-        this.router.get('/oauth/facebook', passport.authenticate('facebook', { failureRedirect: '/', session: false }), this.redirect);
+        this.router.get('/oauth/facebook', passport.authenticate('facebook', { failureRedirect: '/', session: false }), this.redirectSocial);
 
 
         this.router.get('/login/github', passport.authenticate('github', { session: false }));
-        this.router.get('/oauth/github', passport.authenticate('github', { failureRedirect: '/', session: false }), this.redirect);
+        this.router.get('/oauth/github', passport.authenticate('github', { failureRedirect: '/', session: false }), this.redirectSocial);
 
 
         return this.router;
@@ -187,13 +187,13 @@ module.exports = class SocialAuth {
             let user = await persons.createUser({ displayname });
 
             let tokenUser = {
-                id: user.id,
+                // id: user.id,
                 shortid: user.shortid,
                 displayname: user.displayname,
-                email: user.email,
-                isdev: user.isdev,
-                github: user.github,
-                membersince: user.membersince
+                // email: user.email ? 1 : 0,
+                // isdev: user.isdev,
+                // github: user.github,
+                // membersince: user.membersince
             }
 
             let token = await persons.encodeUserToken(tokenUser, JWT_PRIVATE_KEY);
@@ -222,7 +222,7 @@ module.exports = class SocialAuth {
     }
 
 
-    async redirect(req, res) {
+    async redirectSocial(req, res) {
         let websiteurl = creds.platform.website.url;
 
         if (!req.user)
@@ -269,13 +269,13 @@ module.exports = class SocialAuth {
             // req.session.user = dbUser;
             console.log(dbUser);
             let tokenUser = {
-                id: dbUser.id,
-                shortid: dbUser.shortid,
-                displayname: dbUser.displayname,
-                email: dbUser.email,
-                isdev: dbUser.isdev,
-                github: dbUser.github,
-                membersince: dbUser.membersince
+                // id: user.id,
+                shortid: user.shortid,
+                displayname: user.displayname,
+                // email: user.email ? 1 : 0,
+                // isdev: user.isdev,
+                // github: user.github,
+                // membersince: user.membersince
             }
             let token = await persons.encodeUserToken(tokenUser, JWT_PRIVATE_KEY);
             req.user = dbUser;
