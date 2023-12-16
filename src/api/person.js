@@ -9,6 +9,7 @@ const persons = new PersonService();
 
 const fs = require('fs');
 const { GeneralError } = require('shared/util/errorhandler');
+const { getCountry } = require('shared/services/country');
 const JWT_PRIVATE_KEY = fs.readFileSync('./src/credentials/jwtRS256.key');
 
 module.exports = class PersonAPI {
@@ -22,6 +23,7 @@ module.exports = class PersonAPI {
     routesPublic() {
         this.routerPublic.get('/api/v1/person/:displayname', this.apiGetPlayer);
 
+        this.routerPublic.get('/api/v1/country', this.apiGetCountry);
         return this.routerPublic;
 
 
@@ -39,6 +41,18 @@ module.exports = class PersonAPI {
         return this.router;
     }
 
+    async apiGetCountry(req, res, next) {
+        try {
+            let ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress
+            let countrycode = getCountry(ip);
+
+            res.json({ countrycode });
+        }
+        catch (e) {
+            next(e);
+            return;
+        }
+    }
     async apiGetPlayer(req, res, next) {
         try {
             let displayname = req.params?.displayname;
@@ -63,10 +77,10 @@ module.exports = class PersonAPI {
                 throw new GeneralError('E_NOTAUTHORIZED');
             }
 
-            if (!req.user.id)
+            if (!req.user.shortid)
                 throw new GeneralError('E_NOTAUTHORIZED');
 
-            let user = await persons.findUser({ id: req.user.id });
+            let user = await persons.findUser({ shortid: req.user.shortid });
 
             if (!user)
                 throw new GeneralError('E_NOTAUTHORIZED');
@@ -76,10 +90,14 @@ module.exports = class PersonAPI {
                 id: user.id,
                 shortid: user.shortid,
                 displayname: user.displayname,
+                countrycode: user.countrycode,
+                portraitid: user.portraitid,
                 email: user.email,
                 github: user.github,
                 membersince: user.membersince,
                 isdev: user.isdev,
+                level: user.level,
+                points: user.points,
                 ranks: user.ranks,
                 devgames: user.devgames
             }
@@ -116,18 +134,25 @@ module.exports = class PersonAPI {
                 }
             }
 
+            let portraitid = user?.portraitid || Math.floor(Math.random() * (2104 - 1 + 1) + 1)
+            let countrycode = user?.countrycode || 'US';
+
             let sessionUser = req.user;
-            user.id = sessionUser.id;
+            user.shortid = sessionUser.shortid;
             user.displayname = user.displayname;
+            user.portraitid = portraitid;
+            user.countrycode = countrycode;
+
             user = await persons.createDisplayName(user);
 
             let tokenUser = {
-                id: user.id,
+                // id: user.id,
                 shortid: sessionUser.shortid,
                 displayname: user.displayname,
                 email: sessionUser.email,
-                isdev: sessionUser.isdev,
-                github: sessionUser.github
+                // email: sessionUser.email,
+                // isdev: sessionUser.isdev,
+                // github: sessionUser.github
             }
             let token = await persons.encodeUserToken(tokenUser, JWT_PRIVATE_KEY);
 
@@ -136,9 +161,13 @@ module.exports = class PersonAPI {
                 id: user.id,
                 shortid: sessionUser.shortid,
                 displayname: user.displayname,
+                countrycode: user.countrycode,
+                portraitid: user.portraitid,
                 email: sessionUser.email,
                 github: sessionUser.github,
                 membersince: sessionUser.membersince,
+                level: user.level,
+                points: user.points,
                 isdev: sessionUser.isdev,
                 ranks: sessionUser.ranks,
                 devgames: sessionUser.devgames

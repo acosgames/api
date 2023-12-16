@@ -33,6 +33,9 @@ module.exports = class FacebookAuth {
         try {
             let email = profile._json.email || profile?.emails[0]?.value || profile.id; //profile object has the user info
 
+            //facebook might share email with gmail/outlook, mark them differently.
+            email = email.replace('@', '+fb_acosuser@');
+
             //let [user] = await db('users').select(['id', 'name', 'email']).where('email', user_email); //check whether user exist in database
             let redirect_url = "";
             if (email) {

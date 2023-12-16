@@ -16,6 +16,10 @@ const { GeneralError } = require('shared/util/errorhandler');
 
 const JWT_PRIVATE_KEY = fs.readFileSync('./src/credentials/jwtRS256.key');
 
+
+const { getCountry } = require('shared/services/country');
+
+
 const creds = credutil();
 
 module.exports = class SocialAuth {
@@ -119,7 +123,8 @@ module.exports = class SocialAuth {
 
             let user = await persons.decodeUserToken(jwtToken);
             if (user) {
-                if (!user.email || user.email.length == 0) {
+                // if this is a temp account, delete the user
+                if (!user.email) {
                     try {
                         let result = await persons.deleteUser(user);
                     }
@@ -163,8 +168,12 @@ module.exports = class SocialAuth {
 
     async apiCreateTempUser(req, res, next) {
         try {
-            let displayname = req.body?.displayname;
+            // let ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress
+            // let countrycode = getCountry(ip);
 
+            let displayname = req.body?.displayname;
+            let portraitid = req.body?.portraitid || Math.floor(Math.random() * (2104 - 1 + 1) + 1)
+            let countrycode = req.body?.countrycode || 'US';
             if (!displayname) {
                 res.json({ ecode: "E_MISSING_DISPLAYNAME" });
                 return;
@@ -184,13 +193,13 @@ module.exports = class SocialAuth {
                 throw new GeneralError('E_PERSON_DUPENAME');
             }
 
-            let user = await persons.createUser({ displayname });
+            let user = await persons.createUser({ displayname, countrycode, portraitid });
 
             let tokenUser = {
                 // id: user.id,
                 shortid: user.shortid,
                 displayname: user.displayname,
-                // email: user.email ? 1 : 0,
+                email: user.email ? 1 : 0,
                 // isdev: user.isdev,
                 // github: user.github,
                 // membersince: user.membersince
@@ -203,9 +212,13 @@ module.exports = class SocialAuth {
                 id: user.id,
                 shortid: user.shortid,
                 displayname: user.displayname,
+                countrycode: countrycode,
+                portraitid: portraitid,
                 email: user.email || null,
                 github: user.github || null,
                 membersince: user.membersince,
+                level: user.level,
+                points: user.points,
                 isdev: user.isdev,
                 ranks: [],
                 devgames: [],
@@ -229,6 +242,7 @@ module.exports = class SocialAuth {
             res.redirect(websiteurl)
 
 
+
         // console.log(req.session.passport);
         let user = req.user;
 
@@ -238,9 +252,9 @@ module.exports = class SocialAuth {
             if (jwtToken) {
                 let tokenUser = await persons.decodeUserToken(jwtToken);
                 if (!(tokenUser?.email)) {
-
+                    tokenUser.email = user.email;
                     user = Object.assign({}, user, tokenUser);
-                    let result = await persons.updateUser(user);
+                    let result = await persons.updateUser({ shortid: user.shortid, email: user.email, github: user.github, github_id: user.github_id });
                 }
             }
         }
@@ -251,12 +265,17 @@ module.exports = class SocialAuth {
                 //let it create new token by going to code below
             }
             else {
-                res.redirect(`${websiteurl}/login/accountexists`)
+                res.redirect(`${websiteurl}/login/success`)
                 // res.json({ ecode: 'E_INVALID_USER_CREATE' });
                 return;
             }
 
         }
+
+        // let ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress
+        // let countrycode = getCountry(ip);
+
+        // user.countrycode = user.countrycode || countrycode;
 
 
         try {
@@ -270,9 +289,9 @@ module.exports = class SocialAuth {
             console.log(dbUser);
             let tokenUser = {
                 // id: user.id,
-                shortid: user.shortid,
-                displayname: user.displayname,
-                // email: user.email ? 1 : 0,
+                shortid: dbUser.shortid,
+                displayname: dbUser.displayname,
+                email: dbUser.email ? 1 : 0,
                 // isdev: user.isdev,
                 // github: user.github,
                 // membersince: user.membersince
@@ -283,11 +302,11 @@ module.exports = class SocialAuth {
 
             res.cookie('X-API-KEY', token, { httpOnly: true, SameSite: 'Strict', overwrite: true })
 
-            if (!dbUser.displayname || dbUser.displayname.length == 0 || dbUser.displayname == dbUser.apikey) {
-                //res.setHeader('Set-Cookie', 'X-API-KEY=' + dbUser.apikey + '; HttpOnly');
-                res.redirect(`${websiteurl}/player/create`);
-                return;
-            }
+            // if (!dbUser.displayname || dbUser.displayname.length == 0 || dbUser.displayname == dbUser.apikey) {
+            //     //res.setHeader('Set-Cookie', 'X-API-KEY=' + dbUser.apikey + '; HttpOnly');
+            //     res.redirect(`${websiteurl}/player/create`);
+            //     return;
+            // }
 
             // if (dbUser.isdev || (dbUser.github && dbUser.github.length > 0)) {
             //     res.redirect('http://localhost:8000/dev');

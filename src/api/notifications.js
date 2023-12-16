@@ -18,16 +18,16 @@ module.exports = function routes(middleware) {
                 throw new GeneralError('E_NOT_AUTHORIZED');
             }
 
+            let shortid = user.shortid;
             //disable notifications
             if (!subscription) {
-                let results = await person.updateUser({ id, webpush: null });
+                let results = await person.updateUser({ shortid, webpush: null });
                 res.status(200).json({ 'success': true })
             }
 
             console.log(subscription)
 
-            let id = user.id;
-            let results = await person.updateUser({ id, webpush: JSON.stringify(subscription) });
+            let results = await person.updateUser({ shortid, webpush: JSON.stringify(subscription) });
 
             res.status(200).json({ 'success': true })
         }

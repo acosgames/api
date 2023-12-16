@@ -31,6 +31,11 @@ module.exports = class GithubAuth {
     async strategyCallback(accessToken, refreshToken, profile, done) {
         try {
             let email = profile.emails && profile.emails[0].value; //profile object has the user info
+
+            //github accounts may share email with gmail/microsoft
+            // but these are always potential dev accounts
+            // so, mark them so
+            email = email.replace('@', '+acosdev@');
             let github = profile.username;
             let github_id = parseInt(profile.id);
             // let displayname = github;
