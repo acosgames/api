@@ -27,7 +27,9 @@ module.exports = class GameAPI {
 
         this.router.get('/api/v1/game/replays/:game_slug', middleware, this.apiFindGameReplays.bind(this));
 
-        this.actionRouter.get('/api/v1/game/lb/:game_slug', middleware, this.apiFindGameLeaderboard.bind(this));
+        this.actionRouter.get('/api/v1/game/rankings/:game_slug/:countrycode', middleware, this.apiFindGameRankNational.bind(this));
+        this.actionRouter.get('/api/v1/game/rankings/:game_slug', middleware, this.apiFindGameRankGlobal.bind(this));
+
         this.actionRouter.get('/api/v1/game/lbhs/:game_slug', middleware, this.apiFindGameLeaderboardHighscore.bind(this));
 
         return this.router;
@@ -44,12 +46,29 @@ module.exports = class GameAPI {
         return this.actionRouter;
     }
 
-    async apiFindGameLeaderboard(req, res, next) {
+    async apiFindGameRankNational(req, res, next) {
         let g = null;
         try {
             let user = req.user;
             let game_slug = req.params.game_slug;
-            g = await game.findGameLeaderboard(game_slug, user?.shortid, user?.displayname);
+            let countrycode = req.params.countrycode;
+            g = await game.findGameRankNational(game_slug, user?.shortid, user?.displayname, countrycode);
+        }
+        catch (e) {
+            next(e);
+            return;
+        }
+
+        res.json(g);
+        return;
+    }
+
+    async apiFindGameRankGlobal(req, res, next) {
+        let g = null;
+        try {
+            let user = req.user;
+            let game_slug = req.params.game_slug;
+            g = await game.findGameRankGlobal(game_slug, user?.shortid, user?.displayname);
         }
         catch (e) {
             next(e);
