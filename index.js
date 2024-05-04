@@ -61,22 +61,22 @@ const { renderHTML, renderSITEMAP, renderRobotsTxt } = require('./src/api/seo');
 
 
 
-const webpack = require('webpack');
-const webpackConfig = require('./webpack/dev.config');
-const compiler = webpack(webpackConfig);
+// const webpack = require('webpack');
+// const webpackConfig = require('./webpack/dev.config');
+// const compiler = webpack(webpackConfig);
 
 
-const webpackDevMiddleware = require('webpack-dev-middleware');
-const webpackHotMiddleware = require("webpack-hot-middleware");
-const webpackPublicPath = path.resolve(process.cwd(), 'public/');
-console.log("webpackPublicPath", webpackPublicPath);
-app.use(webpackDevMiddleware(compiler, {
-    publicPath: '/public',
-    writeToDisk: false,
-    stats: { colors: true }
-}));
+// const webpackDevMiddleware = require('webpack-dev-middleware');
+// const webpackHotMiddleware = require("webpack-hot-middleware");
+// const webpackPublicPath = path.resolve(process.cwd(), 'public/');
+// console.log("webpackPublicPath", webpackPublicPath);
+// app.use(webpackDevMiddleware(compiler, {
+//     publicPath: '/public',
+//     writeToDisk: false,
+//     stats: { colors: true }
+// }));
 
-app.use(webpackHotMiddleware(compiler));
+// app.use(webpackHotMiddleware(compiler));
 
 app.use(cookieParser('q*npasdfAm(7_A#"AvV', { 'httpOnly': true }));
 app.use(express.json());
@@ -114,12 +114,14 @@ const DevGameAPI = require('./src/api/devgame');
 const ServerAPI = require('./src/api/server');
 const GameAPI = require('./src/api/game');
 const NotificationsAPI = require('./src/api/notifications');
+const LeaderboardAPI = require('./src/api/leaderboard');
 
 const social = new SocialAuth();
 const person = new PersonAPI();
 const devgame = new DevGameAPI();
 const server = new ServerAPI();
 const game = new GameAPI();
+const leaderboard = new LeaderboardAPI();
 
 app.get('/version', async (req, res, next) => {
     try {
@@ -138,8 +140,23 @@ app.use('/assets', express.static(path.join(__dirname, 'public')));
 
 app.use('/privacypolicy', express.static(path.join(__dirname, 'public/privacypolicy.html')));
 
+
 app.use('/.well-known', express.static(path.join(__dirname, 'public/.well-known'), { dotfiles: 'allow' }));
 
+//VITE - manifest, css, jsx files
+const distFiles = path.join(__dirname, './public');
+if (process.env.NODE_ENV == 'production' || process.env.NODE_ENV == 'prod') {
+    const manifest = require(distFiles + '/.vite/manifest.json');
+    let manifestCSS = manifest['src/main.jsx'].css;
+    let cssLinks = manifestCSS.map(css => `<link rel="stylesheet" href="/${css}" />`);
+    let cssLinksString = cssLinks.join('\n');
+    let mainJSFile = manifest['src/main.jsx'].file;
+}
+
+
+app.use('/manifest.json', (req, res) => {
+    res.sendFile(distFiles + '/.vite/manifest.json');
+})
 
 app.use(social.routes());
 
@@ -192,6 +209,10 @@ app.get('/favicon.ico', (req, res, next) => {
     res.sendFile(dir + 'favicon.ico');
 })
 
+app.get('/stats.html', (req, res, next) => {
+    res.sendFile(dir + 'stats.html');
+})
+
 app.get('/play-favicon.ico', (req, res, next) => {
     res.sendFile(dir + 'play-favicon.ico');
 })
@@ -214,6 +235,7 @@ let socialAuthenticationIfAvailable = social.authIfAvailable();
 app.use(devgame.bundleRoutes());
 app.use(server.routes());
 app.use(game.routes(socialAuthenticationIfAvailable));
+app.use(leaderboard.routes(socialAuthenticationIfAvailable));
 app.use(person.routesPublic());
 
 // const dir = `${__dirname}/public/`;
@@ -226,6 +248,7 @@ app.use(NotificationsAPI(socialAuthentication));
 app.use(person.routes(socialAuthentication));
 app.use(devgame.routes(socialAuthentication));
 app.use(game.actionRoutes(socialAuthentication));
+app.use(leaderboard.actionRoutes(socialAuthentication));
 
 app.use('/sitemap.txt', (req, res, next) => {
     res.setHeader('Content-Type', 'text/plain')

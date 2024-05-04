@@ -1,0 +1,107 @@
+{
+  "_chakra-!~{002}~.js": {
+    "file": "assets/chakra-CyNf3f7D.css",
+    "src": "_chakra-!~{002}~.js"
+  },
+  "_chakra-CpsjhvNt.js": {
+    "file": "assets/chakra-CpsjhvNt.js",
+    "name": "chakra",
+    "css": [
+      "assets/chakra-CyNf3f7D.css"
+    ],
+    "assets": [
+      "assets/roboto-cyrillic-ext-400-normal-DjuvKb_P.woff2",
+      "assets/roboto-all-400-normal-f4MUuuLv.woff",
+      "assets/roboto-cyrillic-400-normal-BWCKIajk.woff2",
+      "assets/roboto-greek-400-normal-DuywzvlP.woff2",
+      "assets/roboto-vietnamese-400-normal-DUA88K9g.woff2",
+      "assets/roboto-latin-ext-400-normal-DXUWhv3T.woff2",
+      "assets/roboto-latin-400-normal-DeojfH1t.woff2"
+    ]
+  },
+  "_icons-Db3xsgFq.js": {
+    "file": "assets/icons-Db3xsgFq.js",
+    "name": "icons",
+    "imports": [
+      "_chakra-CpsjhvNt.js"
+    ]
+  },
+  "_lodash-CdWKk_qs.js": {
+    "file": "assets/lodash-CdWKk_qs.js",
+    "name": "lodash",
+    "imports": [
+      "_chakra-CpsjhvNt.js"
+    ]
+  },
+  "_react-DhHkrbZ1.js": {
+    "file": "assets/react-DhHkrbZ1.js",
+    "name": "react",
+    "imports": [
+      "_chakra-CpsjhvNt.js"
+    ]
+  },
+  "node_modules/@fontsource/roboto/files/roboto-all-400-normal.woff": {
+    "file": "assets/roboto-all-400-normal-f4MUuuLv.woff",
+    "src": "node_modules/@fontsource/roboto/files/roboto-all-400-normal.woff"
+  },
+  "node_modules/@fontsource/roboto/files/roboto-cyrillic-400-normal.woff2": {
+    "file": "assets/roboto-cyrillic-400-normal-BWCKIajk.woff2",
+    "src": "node_modules/@fontsource/roboto/files/roboto-cyrillic-400-normal.woff2"
+  },
+  "node_modules/@fontsource/roboto/files/roboto-cyrillic-ext-400-normal.woff2": {
+    "file": "assets/roboto-cyrillic-ext-400-normal-DjuvKb_P.woff2",
+    "src": "node_modules/@fontsource/roboto/files/roboto-cyrillic-ext-400-normal.woff2"
+  },
+  "node_modules/@fontsource/roboto/files/roboto-greek-400-normal.woff2": {
+    "file": "assets/roboto-greek-400-normal-DuywzvlP.woff2",
+    "src": "node_modules/@fontsource/roboto/files/roboto-greek-400-normal.woff2"
+  },
+  "node_modules/@fontsource/roboto/files/roboto-latin-400-normal.woff2": {
+    "file": "assets/roboto-latin-400-normal-DeojfH1t.woff2",
+    "src": "node_modules/@fontsource/roboto/files/roboto-latin-400-normal.woff2"
+  },
+  "node_modules/@fontsource/roboto/files/roboto-latin-ext-400-normal.woff2": {
+    "file": "assets/roboto-latin-ext-400-normal-DXUWhv3T.woff2",
+    "src": "node_modules/@fontsource/roboto/files/roboto-latin-ext-400-normal.woff2"
+  },
+  "node_modules/@fontsource/roboto/files/roboto-vietnamese-400-normal.woff2": {
+    "file": "assets/roboto-vietnamese-400-normal-DUA88K9g.woff2",
+    "src": "node_modules/@fontsource/roboto/files/roboto-vietnamese-400-normal.woff2"
+  },
+  "src/assets/images/abs-items/bubble.png": {
+    "file": "assets/bubble-ymLFTqLL.png",
+    "src": "src/assets/images/abs-items/bubble.png"
+  },
+  "src/assets/images/abs-items/console-1.png": {
+    "file": "assets/console-1-Bd95Axhj.png",
+    "src": "src/assets/images/abs-items/console-1.png"
+  },
+  "src/assets/images/abs-items/console-2.png": {
+    "file": "assets/console-2-DHoxObMF.png",
+    "src": "src/assets/images/abs-items/console-2.png"
+  },
+  "src/assets/images/abs-items/planet.png": {
+    "file": "assets/planet-C3GiajqO.png",
+    "src": "src/assets/images/abs-items/planet.png"
+  },
+  "src/main.jsx": {
+    "file": "assets/main--fkCRh6E.js",
+    "name": "main",
+    "src": "src/main.jsx",
+    "isEntry": true,
+    "imports": [
+      "_chakra-CpsjhvNt.js",
+      "_react-DhHkrbZ1.js",
+      "_lodash-CdWKk_qs.js",
+      "_icons-Db3xsgFq.js"
+    ],
+    "css": [
+      "assets/main-S6GFrCPE.css"
+    ],
+    "assets": [
+      "assets/planet-C3GiajqO.png",
+      "assets/console-1-Bd95Axhj.png",
+      "assets/console-2-DHoxObMF.png"
+    ]
+  }
+}
