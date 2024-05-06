@@ -150,8 +150,9 @@ module.exports = class PersonAPI {
                 shortid: sessionUser.shortid,
                 displayname: user.displayname,
                 email: sessionUser.email,
+                github: sessionUser.github ? 1 : 0,
                 // email: sessionUser.email,
-                // isdev: sessionUser.isdev,
+                isdev: sessionUser.isdev,
                 // github: sessionUser.github
             }
             let token = await persons.encodeUserToken(tokenUser, JWT_PRIVATE_KEY);

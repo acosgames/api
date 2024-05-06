@@ -200,7 +200,8 @@ module.exports = class SocialAuth {
                 shortid: user.shortid,
                 displayname: user.displayname,
                 email: user.email ? 1 : 0,
-                // isdev: user.isdev,
+                github: user.github ? 1 : 0,
+                isdev: user.isdev,
                 // github: user.github,
                 // membersince: user.membersince
             }
@@ -292,8 +293,8 @@ module.exports = class SocialAuth {
                 shortid: dbUser.shortid,
                 displayname: dbUser.displayname,
                 email: dbUser.email ? 1 : 0,
-                // isdev: user.isdev,
-                // github: user.github,
+                isdev: user.isdev,
+                github: user.github ? 1 : 0,
                 // membersince: user.membersince
             }
             let token = await persons.encodeUserToken(tokenUser, JWT_PRIVATE_KEY);
