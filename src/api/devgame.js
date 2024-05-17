@@ -218,6 +218,13 @@ module.exports = class DevGameAPI {
                 hasDB = true;
             }
 
+            let hasCSS = req.header("X-GAME-HASCSS");
+            if (!hasDB || hasDB == "no") {
+                hasDB = false;
+            } else {
+                hasDB = true;
+            }
+
             let screentype = Number(gameSettings.screentype);
             let resow = Number(gameSettings.resow);
             let resoh = Number(gameSettings.resoh);
@@ -232,6 +239,7 @@ module.exports = class DevGameAPI {
                 resoh,
                 screenwidth,
                 db: hasDB,
+                css: hasCSS,
                 status: 2,
             };
 
@@ -272,6 +280,7 @@ module.exports = class DevGameAPI {
             gameTest = await this.createOrUpdateGameVersion(
                 apikey,
                 hasDB,
+                hasCSS,
                 screentype,
                 resow,
                 resoh,
@@ -535,6 +544,7 @@ module.exports = class DevGameAPI {
     async createOrUpdateGameVersion(
         apikey,
         hasDB,
+        hasCSS,
         screentype,
         resow,
         resoh,
@@ -547,6 +557,7 @@ module.exports = class DevGameAPI {
         let gameTest = await devgame.createGameVersion(
             gameFull,
             hasDB,
+            hasCSS,
             screentype,
             resow,
             resoh,
