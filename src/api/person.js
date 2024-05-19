@@ -1,16 +1,16 @@
-const credutil = require('shared/util/credentials');
-const { Router } = require('express');
+const credutil = require("shared/util/credentials");
+const { Router } = require("express");
 
-const MySQL = require('shared/services/mysql.js');
+const MySQL = require("shared/services/mysql.js");
 const mysql = new MySQL();
 
-const PersonService = require('shared/services/person');
+const PersonService = require("shared/services/person");
 const persons = new PersonService();
 
-const fs = require('fs');
-const { GeneralError } = require('shared/util/errorhandler');
-const { getCountry } = require('shared/services/country');
-const JWT_PRIVATE_KEY = fs.readFileSync('./src/credentials/jwtRS256.key');
+const fs = require("fs");
+const { GeneralError } = require("shared/util/errorhandler");
+const { getCountry } = require("shared/services/country");
+const JWT_PRIVATE_KEY = fs.readFileSync("./src/credentials/jwtRS256.key");
 
 module.exports = class PersonAPI {
     constructor(credentials) {
@@ -21,34 +21,36 @@ module.exports = class PersonAPI {
     }
 
     routesPublic() {
-        this.routerPublic.get('/api/v1/person/:displayname', this.apiGetPlayer);
+        this.routerPublic.get("/api/v1/person/:displayname", this.apiGetPlayer);
 
-        this.routerPublic.get('/api/v1/country', this.apiGetCountry);
+        this.routerPublic.get("/api/v1/country", this.apiGetCountry);
         return this.routerPublic;
-
-
     }
 
     routes(middleware) {
-        middleware = middleware || ((req, res, next) => { next() })
-        this.router.post('/api/v1/person/create/displayname', middleware, this.apiCreateDisplayname);
+        middleware =
+            middleware ||
+            ((req, res, next) => {
+                next();
+            });
+        this.router.post(
+            "/api/v1/person/create/displayname",
+            middleware,
+            this.apiCreateDisplayname
+        );
 
-
-        this.router.get('/api/v1/person/', middleware, this.apiGetProfile);
-
-
+        this.router.get("/api/v1/person/", middleware, this.apiGetProfile);
 
         return this.router;
     }
 
     async apiGetCountry(req, res, next) {
         try {
-            let ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress
+            let ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
             let countrycode = getCountry(ip);
 
             res.json({ countrycode });
-        }
-        catch (e) {
+        } catch (e) {
             next(e);
             return;
         }
@@ -57,34 +59,29 @@ module.exports = class PersonAPI {
         try {
             let displayname = req.params?.displayname;
             if (!displayname) {
-                throw new GeneralError('E_PLAYER_NOTFOUND');
+                throw new GeneralError("E_PLAYER_NOTFOUND");
             }
 
             let user = await persons.findPlayer(displayname);
 
             res.json(user);
-        }
-        catch (e) {
+        } catch (e) {
             next(e);
             return;
         }
-
     }
 
     async apiGetProfile(req, res, next) {
         try {
             if (!req.user) {
-                throw new GeneralError('E_NOTAUTHORIZED');
+                throw new GeneralError("E_NOTAUTHORIZED");
             }
 
-            if (!req.user.shortid)
-                throw new GeneralError('E_NOTAUTHORIZED');
+            if (!req.user.shortid) throw new GeneralError("E_NOTAUTHORIZED");
 
             let user = await persons.findUser({ shortid: req.user.shortid });
 
-            if (!user)
-                throw new GeneralError('E_NOTAUTHORIZED');
-
+            if (!user) throw new GeneralError("E_NOTAUTHORIZED");
 
             let filteredUser = {
                 id: user.id,
@@ -99,18 +96,15 @@ module.exports = class PersonAPI {
                 level: user.level,
                 points: user.points,
                 ranks: user.ranks,
-                devgames: user.devgames
-            }
+                devgames: user.devgames,
+            };
 
-
-
-            filteredUser.token = req.cookies['X-API-KEY'];
+            filteredUser.token = req.cookies["X-API-KEY"];
             filteredUser.exp = req.user?.exp || 0;
             //user.ranks = await persons.findPlayerRanks(user.shortid);
 
             res.json(filteredUser);
-        }
-        catch (e) {
+        } catch (e) {
             next(e);
             return;
         }
@@ -126,7 +120,10 @@ module.exports = class PersonAPI {
             }
 
             if (user && user.displayname) {
-                user.displayname = user.displayname.replace(/[^A-Za-z0-9\_]/ig, '');
+                user.displayname = user.displayname.replace(
+                    /[^A-Za-z0-9\_]/gi,
+                    ""
+                );
 
                 if (user.displayname.length < 3) {
                     res.json({ ecode: "E_DISPLAYNAME_TOOSHORT" });
@@ -134,8 +131,10 @@ module.exports = class PersonAPI {
                 }
             }
 
-            let portraitid = user?.portraitid || Math.floor(Math.random() * (2104 - 1 + 1) + 1)
-            let countrycode = user?.countrycode || 'US';
+            let portraitid =
+                user?.portraitid ||
+                Math.floor(Math.random() * (2104 - 1 + 1) + 1);
+            let countrycode = user?.countrycode || "US";
 
             let sessionUser = req.user;
             user.shortid = sessionUser.shortid;
@@ -154,9 +153,11 @@ module.exports = class PersonAPI {
                 // email: sessionUser.email,
                 isdev: sessionUser.isdev,
                 // github: sessionUser.github
-            }
-            let token = await persons.encodeUserToken(tokenUser, JWT_PRIVATE_KEY);
-
+            };
+            let token = await persons.encodeUserToken(
+                tokenUser,
+                JWT_PRIVATE_KEY
+            );
 
             filteredUser = {
                 id: user.id,
@@ -171,12 +172,15 @@ module.exports = class PersonAPI {
                 points: user.points,
                 isdev: sessionUser.isdev,
                 ranks: sessionUser.ranks,
-                devgames: sessionUser.devgames
-            }
+                devgames: sessionUser.devgames,
+            };
 
-            res.cookie('X-API-KEY', token, { httpOnly: true, SameSite: 'Strict', overwrite: true })
-        }
-        catch (e) {
+            res.cookie("X-API-KEY", token, {
+                httpOnly: true,
+                SameSite: "Strict",
+                overwrite: true,
+            });
+        } catch (e) {
             next(e);
             return;
         }
@@ -184,5 +188,4 @@ module.exports = class PersonAPI {
         res.json(filteredUser);
         return;
     }
-
-}
+};
