@@ -306,6 +306,12 @@ module.exports = class DevGameAPI {
             let merged = Object.assign({}, gameTest, gameResult);
             // res.json(merged);
 
+            let statsResults = await devgame.updateStats(
+                gameFull,
+                apikey,
+                gameSettings
+            );
+
             merged.game_slug = req.game.game_slug;
 
             let json = req.game;
