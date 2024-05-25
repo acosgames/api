@@ -277,15 +277,15 @@ module.exports = class DevGameAPI {
                 req.game.latest_version
             );
 
-            gameTest = await this.createOrUpdateGameVersion(
-                apikey,
-                hasDB,
-                hasCSS,
-                screentype,
-                resow,
-                resoh,
-                screenwidth
-            );
+            // gameTest = await this.createOrUpdateGameVersion(
+            //     apikey,
+            //     hasDB,
+            //     hasCSS,
+            //     screentype,
+            //     resow,
+            //     resoh,
+            //     screenwidth
+            // );
 
             this.validateSettings(gameSettings);
 
@@ -302,16 +302,37 @@ module.exports = class DevGameAPI {
                 gameWithSetings.teams = gameSettings.teams;
             }
 
-            let gameResult = await devgame.updateGame(gameWithSetings);
+            let db = await mysql.begin("createDevGame");
+
+            let dbGame = await devgame.findGame({ apikey }, null, db);
+
+            gameTest = await devgame.createGameVersion(
+                db,
+                dbGame,
+                hasDB,
+                hasCSS,
+                screentype,
+                resow,
+                resoh,
+                screenwidth
+            );
+
+            let gameResult = await devgame.updateGame(
+                gameWithSetings,
+                null,
+                db
+            );
             let merged = Object.assign({}, gameTest, gameResult);
             // res.json(merged);
 
             let statsResults = await devgame.updateStats(
+                db,
                 gameFull,
                 apikey,
                 gameSettings
             );
 
+            mysql.end("createDevGame");
             merged.game_slug = req.game.game_slug;
 
             let json = req.game;
@@ -319,100 +340,9 @@ module.exports = class DevGameAPI {
             res.write(jsonStr);
             res.end();
 
-            // let zipped
-            //     = zlib.createGzip();
-            // // var cnt = 0;
-
-            // console.log("Transformed: ", file.fieldname);
-            // file.stream.on('data', (chunk) => {
-            //     // console.log("chunk[" + cnt + "]", chunk);
-            //     // cnt++;
-            //     //prepend the iframe top html
-            //     // if (cnt == 1)
-            //     //     zipped.write(iframeTop);
-            //     //write the JS into the middle
-            //     zipped.write(chunk);
-            // });
-
-            // file.stream.on('end', () => {
-            //     //append the iframe bottom html
-            //     // zipped.write(iframeBottom);
-            //     // var zipped = new stream.PassThrough();
-            //     // cb(null, zipped);
-            // });
-
             return;
-
-            // let screentype = req.header('X-GAME-SCREENTYPE') || 1;
-            // let resow = req.header('X-GAME-RESOW') || 4;
-            // let resoh = req.header('X-GAME-RESOH') || 4;
-            // let screenwidth = req.header('X-GAME-SCREENWIDTH') || 1200;
-
-            // let screentype = Number(gameSettings.screentype);
-            // let resow = Number(gameSettings.resow);
-            // let resoh = Number(gameSettings.resoh);
-            // let screenwidth = Number(gameSettings.screenwidth);
-
-            // let hasDB = req.header('X-GAME-HASDB');
-            // if (!hasDB || hasDB == 'no') {
-            //     hasDB = false;
-            // } else {
-            //     hasDB = true;
-            // }
-
-            // // let apikey = '6394232D38D14DB2AC5B09E329CFD00E';
-
-            // var $this = this;
-
-            // let gameFull = await devgame.findGame({ apikey });
-            // let gameTest = {
-            //     game_slug: gameFull.game_slug,
-            //     version: gameFull.latest_version + 1,
-            //     screentype,
-            //     resow,
-            //     resoh,
-            //     screenwidth,
-            //     db: hasDB,
-            //     status: 2
-            // }
-
-            // req.game = gameTest;
-
-            // gameMiddleware(req, res, async function (err) {
-            //     if (err) {
-            //         console.error(err);
-            //         // An unknown error occurred when uploading.
-            //         next(new GeneralError("E_UPLOAD_FAILED"));
-            //         return;
-            //     }
-
-            //     try {
-            //         let gameTest = await $this.createOrUpdateGameVersion(apikey, hasDB, screentype, resow, resoh, screenwidth);
-
-            //         $this.validateSettings(gameSettings)
-
-            //         let gameWithSetings = { apikey };
-            //         if ('minplayers' in gameSettings)
-            //             gameWithSetings.minplayers = gameSettings.minplayers
-            //         if ('maxplayers' in gameSettings)
-            //             gameWithSetings.maxplayers = gameSettings.maxplayers
-            //         if ('minteams' in gameSettings)
-            //             gameWithSetings.minteams = gameSettings.minteams
-            //         if ('maxteams' in gameSettings)
-            //             gameWithSetings.maxteams = gameSettings.maxteams
-            //         if ('teams' in gameSettings) {
-            //             gameWithSetings.teams = gameSettings.teams;
-            //         }
-
-            //         let gameResult = await devgame.updateGame(gameWithSetings);
-            //         let merged = Object.assign({}, gameTest, gameResult);
-            //         res.json(merged);
-            //     }
-            //     catch (e) {
-            //         next(new GeneralError("E_UPLOAD_FAILED"));
-            //     }
-            // })
         } catch (e) {
+            mysql.rollback("createDevGame");
             console.error(e);
             next(new GeneralError("E_UPLOAD_FAILED"));
         }
