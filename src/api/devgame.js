@@ -88,6 +88,11 @@ module.exports = class DevGameAPI {
         );
 
         this.router.post(
+            "/api/v1/dev/createoredit/achievement",
+            middleware,
+            this.apiDevCreateOrUpdateAchievement.bind(this)
+        );
+        this.router.post(
             "/api/v1/dev/update/game",
             middleware,
             this.apiDevUpdateGame.bind(this)
@@ -574,6 +579,34 @@ module.exports = class DevGameAPI {
 
             if (pushedGame.ecode) res.status(400);
             res.json(pushedGame);
+        } catch (e) {
+            next(e);
+        }
+    }
+
+    async apiDevCreateOrUpdateAchievement(req, res, next) {
+        let { game, achievement } = req.body;
+        try {
+            if (!game) {
+                throw new GeneralError("E_DEVGAME_MISSING");
+            }
+            if (!achievement) {
+                throw new GeneralError("E_DEVGAME_ACHIEVEMENT_MISSING");
+            }
+
+            let sessionUser = req.user;
+
+            let pushedAchievement = await devgame.updateAchievement(
+                game,
+                achievement,
+                sessionUser
+            );
+            if (!pushedAchievement) {
+                throw new GeneralError("E_DEVGAME_CREATEACHIEVEMENTFAILED");
+            }
+
+            if (pushedAchievement.ecode) res.status(400);
+            res.json(pushedAchievement);
         } catch (e) {
             next(e);
         }

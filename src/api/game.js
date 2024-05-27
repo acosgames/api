@@ -1,16 +1,15 @@
-const credutil = require('shared/util/credentials');
-const { Router } = require('express');
+const credutil = require("shared/util/credentials");
+const { Router } = require("express");
 
-const MySQL = require('shared/services/mysql.js');
+const MySQL = require("shared/services/mysql.js");
 const mysql = new MySQL();
 
-const { GeneralError } = require('shared/util/errorhandler');
+const { GeneralError } = require("shared/util/errorhandler");
 
-const GameService = require('shared/services/game');
+const GameService = require("shared/services/game");
 const game = new GameService();
 
-const storage = require('./storage');
-
+const storage = require("./storage");
 
 module.exports = class GameAPI {
     constructor(credentials) {
@@ -19,24 +18,54 @@ module.exports = class GameAPI {
         this.actionRouter = new Router();
     }
 
-
     routes(middleware) {
-        middleware = middleware || ((req, res, next) => { next() })
-        this.router.get('/api/v1/games', middleware, this.apiFindGames.bind(this));
-        this.router.get('/api/v1/game/:game_slug', middleware, this.apiFindGame.bind(this));
+        middleware =
+            middleware ||
+            ((req, res, next) => {
+                next();
+            });
+        this.router.get(
+            "/api/v1/games",
+            middleware,
+            this.apiFindGames.bind(this)
+        );
+        this.router.get(
+            "/api/v1/game/:game_slug",
+            middleware,
+            this.apiFindGame.bind(this)
+        );
 
-        this.router.get('/api/v1/game/replays/:game_slug', middleware, this.apiFindGameReplays.bind(this));
+        this.router.get(
+            "/api/v1/game/replays/:game_slug",
+            middleware,
+            this.apiFindGameReplays.bind(this)
+        );
 
         return this.router;
     }
 
     actionRoutes(middleware) {
-        middleware = middleware || ((req, res, next) => { next() })
-        this.actionRouter.get('/api/v1/game/person/:game_slug', middleware, this.apiFindGamePerson.bind(this));
+        middleware =
+            middleware ||
+            ((req, res, next) => {
+                next();
+            });
+        this.actionRouter.get(
+            "/api/v1/game/person/:game_slug",
+            middleware,
+            this.apiFindGamePerson.bind(this)
+        );
 
-        this.actionRouter.post('/api/v1/game/report', middleware, this.apiReportGame.bind(this));
-        this.actionRouter.post('/api/v1/game/rate', middleware, this.apiRateGame.bind(this));
-
+        this.actionRouter.post(
+            "/api/v1/game/report",
+            middleware,
+            this.apiReportGame.bind(this)
+        );
+        this.actionRouter.post(
+            "/api/v1/game/rate",
+            middleware,
+            this.apiRateGame.bind(this)
+        );
 
         return this.actionRouter;
     }
@@ -46,9 +75,12 @@ module.exports = class GameAPI {
         try {
             let user = req.user;
             let game_slug = req.params.game_slug;
-            g = await game.findGamePerson(game_slug, user.shortid, user.displayname);
-        }
-        catch (e) {
+            g = await game.findGamePerson(
+                game_slug,
+                user.shortid,
+                user.displayname
+            );
+        } catch (e) {
             next(e);
             return;
         }
@@ -61,9 +93,6 @@ module.exports = class GameAPI {
     }
 
     async apiReportGame(req, res, next) {
-
-
-
         try {
             let payload = req.body;
             let game_slug = payload.game_slug;
@@ -73,14 +102,13 @@ module.exports = class GameAPI {
             let shortid = user.shortid;
 
             if (reportType < 0 || reportType > 3) {
-                next(new GeneralError('E_INVALIDTYPE'));
+                next(new GeneralError("E_INVALIDTYPE"));
                 return;
             }
 
             let results = await game.reportGame(game_slug, shortid, reportType);
             res.json(results);
-        }
-        catch (e) {
+        } catch (e) {
             next(e);
             return;
         }
@@ -95,17 +123,20 @@ module.exports = class GameAPI {
         let user = req.user;
         let shortid = user.shortid;
 
-
-        if (typeof vote !== 'boolean') {
-            next(new GeneralError('E_INVALIDTYPE'));
+        if (typeof vote !== "boolean") {
+            next(new GeneralError("E_INVALIDTYPE"));
             return;
         }
 
         try {
-            let votes = await game.rateGame(game_slug, shortid, vote, previousVote);
+            let votes = await game.rateGame(
+                game_slug,
+                shortid,
+                vote,
+                previousVote
+            );
             res.json({ votes });
-        }
-        catch (e) {
+        } catch (e) {
             next(e);
             return;
         }
@@ -118,19 +149,16 @@ module.exports = class GameAPI {
             if (!games) {
                 games = await game.findGames();
                 storage.setGameList(games);
-            }
-            else {
+            } else {
                 let queueCounts = await game.getAllGamesQueueCount();
                 for (var i = 0; i < games.length; i++) {
                     let g = games[i];
-                    if (typeof queueCounts[g.game_slug] !== 'undefined')
+                    if (typeof queueCounts[g.game_slug] !== "undefined")
                         g.queueCount = queueCounts[g.game_slug];
-                    else
-                        g.queueCount = 0;
+                    else g.queueCount = 0;
                 }
             }
-        }
-        catch (e) {
+        } catch (e) {
             next(e);
             return;
         }
@@ -144,8 +172,7 @@ module.exports = class GameAPI {
         try {
             let game_slug = req.params.game_slug;
             replays = await game.findGameReplays(game_slug);
-        }
-        catch (e) {
+        } catch (e) {
             next(e);
             return;
         }
@@ -158,8 +185,7 @@ module.exports = class GameAPI {
         try {
             let game_slug = req.params.game_slug;
             g = await game.findGame(game_slug);
-        }
-        catch (e) {
+        } catch (e) {
             next(e);
             return;
         }
@@ -170,4 +196,4 @@ module.exports = class GameAPI {
         res.json(g);
         return;
     }
-}
+};
