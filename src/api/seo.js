@@ -1,101 +1,94 @@
-const CLIENTVERSION = require('shared/model/versions.json')
-const GameService = require('shared/services/game');
+const CLIENTVERSION = require("shared/model/versions.json");
+const GameService = require("shared/services/game");
 const gameService = new GameService();
 
-const defaultDescription = 'Play or develop your own competitive online web game.  The platform supports realtime Turn-based and Trivia style games.  You must first become a developer in the acosgames GitHub Organization. Simply go to Developer Zone on ACOS to start.';
-const defaultAbstract = 'Play or develop your own competitive online web game on the ACOS serverless platform.';
+const defaultDescription =
+    "Play or develop your own competitive online web game.  The platform supports realtime Turn-based and Trivia style games.  You must first become a developer in the acosgames GitHub Organization. Simply go to Developer Zone on ACOS to start.";
+const defaultAbstract =
+    "Play or develop your own competitive online web game on the ACOS serverless platform.";
 const defaultPage = {
-    url: '',
-    title: '',
-    description: '',
-    abstract: '',
-    author: '',
-    keywords: '',
-    image_src: '',
-    canonical: '',
-    site_name: '',
-    update_time: '',
-    published_time: '',
-    modified_time: ''
-}
+    url: "",
+    title: "",
+    description: "",
+    abstract: "",
+    author: "",
+    keywords: "",
+    image_src: "",
+    canonical: "",
+    site_name: "",
+    update_time: "",
+    published_time: "",
+    modified_time: "",
+};
 
 async function getGameMeta(urlpath) {
-
     try {
-
-        let parts = urlpath.split('/');
+        let parts = urlpath.split("/");
         let game_slug = parts[2];
-        if (!game_slug)
-            throw 'Not valid game_slug';
+        if (!game_slug) throw "Not valid game_slug";
 
         let result = await gameService.findGame(game_slug, true);
-        let game = result?.game;
-        if (!game)
-            throw 'Game not found';
-
+        let game = result;
+        if (!game) throw "Game not found";
 
         let page = {
-            url: 'https://acos.games' + urlpath,
-            title: game.name + ' on ACOS',
+            url: "https://acos.games" + urlpath,
+            title: game.name + " on ACOS",
             description: game.longdesc || defaultDescription,
             abstract: game.shortdesc || defaultAbstract,
-            keywords: 'Web Games,Web Dev,Game Dev,Serverless,Competitive,Ranking,Leaderboard,Item Store,Timers,Free Hosting',
+            keywords:
+                "Web Games,Web Dev,Game Dev,Serverless,Competitive,Ranking,Leaderboard,Item Store,Timers,Free Hosting",
             author: game.displayname,
             image_src: `https://assets.acos.games/g/${game_slug}/preview/${game.preview_images}`,
-            canonical: 'https://acos.games' + urlpath,
-            site_name: 'ACOS',
+            canonical: "https://acos.games" + urlpath,
+            site_name: "ACOS",
             update_time: game.tsupdate.toISOString(),
             published_time: game.tsinsert.toISOString(),
-            modified_time: game.tsupdate.toISOString()
-        }
+            modified_time: game.tsupdate.toISOString(),
+        };
 
         return page;
-    }
-    catch (e) {
+    } catch (e) {
         console.error(e);
         return getPageMeta(urlpath);
     }
-
 }
 
 function getPageMeta(urlpath) {
-
     // var formatedMysqlString = (new Date((new Date((new Date(new Date())).toISOString())).getTime() - ((new Date()).getTimezoneOffset() * 60000))).toISOString().slice(0, 19).replace('T', ' ');
 
     let formattedDate = new Date();
     formattedDate = formattedDate.toISOString();
 
     let page = {
-        url: 'https://acos.games' + urlpath,
-        title: 'ACOS Competitive Multiplayer Web Games',
-        description: 'Play or develop your own competitive online web game.  The platform supports realtime Turn-based and Trivia style games.  You must first become a developer in the acosgames GitHub Organization. Simply go to Developer Zone on ACOS to start.',
-        abstract: 'Play or develop your own competitive online web game on the ACOS serverless platform.',
-        author: 'A cup of skill',
-        keywords: 'Web Games,Web Dev,Game Dev,Serverless,Competitive,Ranking,Leaderboard,Item Store,Timers,Free Hosting',
-        image_src: 'https://assets.acos.games/acos-logo-standalone5.png',
-        canonical: 'https://acos.games' + urlpath,
-        site_name: 'ACOS',
+        url: "https://acos.games" + urlpath,
+        title: "ACOS Competitive Multiplayer Web Games",
+        description:
+            "Play or develop your own competitive online web game.  The platform supports realtime Turn-based and Trivia style games.  You must first become a developer in the acosgames GitHub Organization. Simply go to Developer Zone on ACOS to start.",
+        abstract:
+            "Play or develop your own competitive online web game on the ACOS serverless platform.",
+        author: "A cup of skill",
+        keywords:
+            "Web Games,Web Dev,Game Dev,Serverless,Competitive,Ranking,Leaderboard,Item Store,Timers,Free Hosting",
+        image_src: "https://assets.acos.games/acos-logo-standalone5.png",
+        canonical: "https://acos.games" + urlpath,
+        site_name: "ACOS",
         update_time: formattedDate,
         published_time: formattedDate,
-        modified_time: formattedDate
-    }
+        modified_time: formattedDate,
+    };
 
     return page;
 }
 
-
-
 async function renderHTML(req, res) {
-
     let urlpath = req.originalUrl;
     console.log(urlpath);
     let page = {};
 
-    if (urlpath.indexOf('/g/') > -1) {
+    if (urlpath.indexOf("/g/") > -1) {
         page = await getGameMeta(urlpath);
-    }
-    else
-        page = getPageMeta(urlpath) || defaultPage;
+    } else page = getPageMeta(urlpath) || defaultPage;
 
     let output = `<!DOCTYPE html>
         <html lang="en">
@@ -213,34 +206,29 @@ async function renderHTML(req, res) {
                 
                 <script src='https://assets.acos.games/static/bundle.${CLIENTVERSION.client.version}.js'></script>
             </body>
-        </html>`
+        </html>`;
 
     res.send(output);
 }
 
-
 async function getGameURLs() {
-
     try {
         let games = await gameService.getGameSiteMap();
 
-        if (!games)
-            throw 'No games found.';
+        if (!games) throw "No games found.";
 
-        let output = '';
+        let output = "";
         for (var i = 0; i < games.length; i++) {
-            output += 'https://acos.games/g/' + games[i].game_slug + '\n'
+            output += "https://acos.games/g/" + games[i].game_slug + "\n";
         }
 
         return output;
-    }
-    catch (e) {
-        return '';
+    } catch (e) {
+        return "";
     }
 }
 
 async function renderSITEMAP(req, res) {
-
     let gameURLs = await getGameURLs();
 
     let output = `https://acos.games
@@ -253,7 +241,6 @@ https://acos.games/terms`;
 }
 
 async function renderRobotsTxt(req, res) {
-
     let output = `User-agent: *
 Allow: /
     
@@ -262,4 +249,4 @@ Sitemap: https://acos.games/sitemap.txt`;
     res.send(output);
 }
 
-module.exports = { renderHTML, renderSITEMAP, renderRobotsTxt }
+module.exports = { renderHTML, renderSITEMAP, renderRobotsTxt };
