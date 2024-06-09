@@ -57,6 +57,12 @@ module.exports = class GameAPI {
         );
 
         this.actionRouter.post(
+            `/api/v1/game/achievement/claim`,
+            middleware,
+            this.apiClaimAchievement.bind(this)
+        );
+
+        this.actionRouter.post(
             "/api/v1/game/report",
             middleware,
             this.apiReportGame.bind(this)
@@ -92,6 +98,26 @@ module.exports = class GameAPI {
         return;
     }
 
+    async apiClaimAchievement(req, res, next) {
+        try {
+            let payload = req.body;
+            let game_slug = payload.game_slug;
+            let achievement_slug = payload.achievement_slug;
+
+            let user = req.user;
+            let shortid = user.shortid;
+
+            let results = await game.claimAchievement(
+                game_slug,
+                shortid,
+                achievement_slug
+            );
+            res.json(results);
+        } catch (e) {
+            next(e);
+            return;
+        }
+    }
     async apiReportGame(req, res, next) {
         try {
             let payload = req.body;
