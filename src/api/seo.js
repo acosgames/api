@@ -1,6 +1,6 @@
 const CLIENTVERSION = require("shared/model/versions.json");
-const GameService = require("shared/services/game");
-const gameService = new GameService();
+const gameService = require("shared/services/game");
+// const gameService = new GameService();
 
 const defaultDescription =
     "Play or develop your own competitive online web game.  The platform supports realtime Turn-based and Trivia style games.  You must first become a developer in the acosgames GitHub Organization. Simply go to Developer Zone on ACOS to start.";
@@ -70,7 +70,7 @@ function getPageMeta(urlpath) {
         author: "A cup of skill",
         keywords:
             "Web Games,Web Dev,Game Dev,Serverless,Competitive,Ranking,Leaderboard,Item Store,Timers,Free Hosting",
-        image_src: "https://assets.acos.games/acos-logo-standalone5.png",
+        image_src: "https://assets.acos.games/acos-logo-2025.webp",
         canonical: "https://acos.games" + urlpath,
         site_name: "ACOS",
         update_time: formattedDate,

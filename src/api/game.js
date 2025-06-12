@@ -6,10 +6,11 @@ const mysql = new MySQL();
 
 const { GeneralError } = require("shared/util/errorhandler");
 
-const GameService = require("shared/services/game");
-const game = new GameService();
+const game = require("shared/services/game");
+// const game = new GameService();
 
 const storage = require("./storage");
+const achievements = require("shared/services/achievements");
 
 module.exports = class GameAPI {
     constructor(credentials) {
@@ -107,7 +108,7 @@ module.exports = class GameAPI {
             let user = req.user;
             let shortid = user.shortid;
 
-            let results = await game.claimAchievement(
+            let results = await achievements.claimAchievement(
                 game_slug,
                 shortid,
                 achievement_slug

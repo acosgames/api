@@ -1,38 +1,32 @@
-const express = require('express');
-const cors = require('cors');
-var http = require('http')
-const cookieParser = require('cookie-parser');
-const session = require('express-session');
-const webpush = require('web-push')
+const express = require("express");
+const cors = require("cors");
+var http = require("http");
+const cookieParser = require("cookie-parser");
+const session = require("express-session");
+const webpush = require("web-push");
 
 // const MemoryStore = require('memorystore')(session)
 // var FileStore = require('session-file-store')(session);
-const profiler = require('shared/util/profiler')
-const { GeneralError } = require('shared/util/errorhandler');
+const profiler = require("shared/util/profiler");
+const { GeneralError } = require("shared/util/errorhandler");
 
-
-const { getVersion } = require('./src/api/version');
+const { getVersion } = require("./src/api/version");
 
 const clientVersion = getVersion() || 0;
 
 const NODE_ENV = process.env.NODE_ENV;
-const isProduction = NODE_ENV == 'production';
+const isProduction = NODE_ENV == "production";
 
-const credutil = require('shared/util/credentials');
+const credutil = require("shared/util/credentials");
 const credentials = credutil();
 const PORT = process.env.PORT || credentials.platform.api.port;
-const path = require('path');
+const path = require("path");
 
-const app = express()
+const app = express();
 var httpServer = http.createServer(app);
 
-
-
-
-
-const { renderHTML, renderSITEMAP, renderRobotsTxt } = require('./src/api/seo');
+const { renderHTML, renderSITEMAP, renderRobotsTxt } = require("./src/api/seo");
 // var fileStoreOptions = {};
-
 
 // app.use(cors({
 //     origin: [
@@ -56,15 +50,11 @@ const { renderHTML, renderSITEMAP, renderRobotsTxt } = require('./src/api/seo');
 // app.use((req,res,next) => {
 //     app.use((req,res,next) => {
 
-
 // })
-
-
 
 // const webpack = require('webpack');
 // const webpackConfig = require('./webpack/dev.config');
 // const compiler = webpack(webpackConfig);
-
 
 // const webpackDevMiddleware = require('webpack-dev-middleware');
 // const webpackHotMiddleware = require("webpack-hot-middleware");
@@ -78,43 +68,43 @@ const { renderHTML, renderSITEMAP, renderRobotsTxt } = require('./src/api/seo');
 
 // app.use(webpackHotMiddleware(compiler));
 
-app.use(cookieParser('q*npasdfAm(7_A#"AvV', { 'httpOnly': true }));
+app.use(cookieParser('q*npasdfAm(7_A#"AvV', { httpOnly: true }));
 app.use(express.json());
 
-webpush.setVapidDetails(credentials.webpush.contact, credentials.webpush.publickey, credentials.webpush.privatekey)
+webpush.setVapidDetails(
+    credentials.webpush.contact,
+    credentials.webpush.publickey,
+    credentials.webpush.privatekey
+);
 
 if (isProduction) {
     app.use(async function (req, res, next) {
         try {
-            res.setHeader('v', "" + clientVersion);
-            res.setHeader('charset', 'utf-8')
-        }
-        catch (e) {
+            res.setHeader("v", "" + clientVersion);
+            res.setHeader("charset", "utf-8");
+        } catch (e) {
             console.error(e);
         }
         next();
     });
-}
-else {
+} else {
     app.use(async function (req, res, next) {
         try {
-            res.setHeader('charset', 'utf-8')
-        }
-        catch (e) {
+            res.setHeader("charset", "utf-8");
+        } catch (e) {
             console.error(e);
         }
         next();
     });
 }
 
-
-const SocialAuth = require('./src/api/authentication/authsocial');
-const PersonAPI = require('./src/api/person');
-const DevGameAPI = require('./src/api/devgame');
-const ServerAPI = require('./src/api/server');
-const GameAPI = require('./src/api/game');
-const NotificationsAPI = require('./src/api/notifications');
-const LeaderboardAPI = require('./src/api/leaderboard');
+const SocialAuth = require("./src/api/authentication/authsocial");
+const PersonAPI = require("./src/api/person");
+const DevGameAPI = require("./src/api/devgame");
+const ServerAPI = require("./src/api/server");
+const GameAPI = require("./src/api/game");
+const NotificationsAPI = require("./src/api/notifications");
+const LeaderboardAPI = require("./src/api/leaderboard");
 
 const social = new SocialAuth();
 const person = new PersonAPI();
@@ -123,70 +113,70 @@ const server = new ServerAPI();
 const game = new GameAPI();
 const leaderboard = new LeaderboardAPI();
 
-app.get('/version', async (req, res, next) => {
+app.get("/version", async (req, res, next) => {
     try {
         res.send("" + clientVersion);
         return;
-    }
-    catch (e) {
+    } catch (e) {
         console.error(e);
     }
     res.send(0);
-})
+});
 
+app.use("/public", express.static(path.join(__dirname, "public")));
+app.use("/assets", express.static(path.join(__dirname, "public")));
 
-app.use('/public', express.static(path.join(__dirname, 'public')));
-app.use('/assets', express.static(path.join(__dirname, 'public')));
+app.use("/privacypolicy", express.static(path.join(__dirname, "public/privacypolicy.html")));
 
-app.use('/privacypolicy', express.static(path.join(__dirname, 'public/privacypolicy.html')));
-
-
-app.use('/.well-known', express.static(path.join(__dirname, 'public/.well-known'), { dotfiles: 'allow' }));
+app.use(
+    "/.well-known",
+    express.static(path.join(__dirname, "public/.well-known"), {
+        dotfiles: "allow",
+    })
+);
 
 //VITE - manifest, css, jsx files
-const distFiles = path.join(__dirname, './public');
-if (process.env.NODE_ENV == 'production' || process.env.NODE_ENV == 'prod') {
-    const manifest = require(distFiles + '/.vite/manifest.json');
-    let manifestCSS = manifest['src/main.jsx'].css;
-    let cssLinks = manifestCSS.map(css => `<link rel="stylesheet" href="/${css}" />`);
-    let cssLinksString = cssLinks.join('\n');
-    let mainJSFile = manifest['src/main.jsx'].file;
+const distFiles = path.join(__dirname, "./public");
+if (process.env.NODE_ENV == "production" || process.env.NODE_ENV == "prod") {
+    const manifest = require(distFiles + "/.vite/manifest.json");
+    let manifestCSS = manifest["src/main.jsx"].css;
+    let cssLinks = manifestCSS.map((css) => `<link rel="stylesheet" href="/${css}" />`);
+    let cssLinksString = cssLinks.join("\n");
+    let mainJSFile = manifest["src/main.jsx"].file;
 }
 
-
-app.use('/manifest.json', (req, res) => {
-    res.sendFile(distFiles + '/.vite/manifest.json');
-})
+app.use("/manifest.json", (req, res) => {
+    res.sendFile(distFiles + "/.vite/manifest.json");
+});
 
 app.use(social.routes());
 
 const dir = `${__dirname}/public/`;
 
 if (isProduction) {
-    app.get('/iframe*', (req, res, next) => {
-        res.sendFile(dir + 'iframe.html');
-    })
+    app.get("/iframe*", (req, res, next) => {
+        res.sendFile(dir + "iframe.html");
+    });
 
     app.get(`/custom-sw.js*`, (req, res, next) => {
-        res.setHeader('Content-Encoding', 'gzip')
-        res.setHeader('Content-Type', 'application/javascript')
+        res.setHeader("Content-Encoding", "gzip");
+        res.setHeader("Content-Type", "application/javascript");
         res.sendFile(dir + `custom-sw.${clientVersion}.js`);
-    })
+    });
 
     // app.get(`/custom-sw.${clientVersion}.js*`, (req, res, next) => {
     //     res.setHeader('Content-Encoding', 'gzip')
     //     res.setHeader('Content-Type', 'application/javascript')
     //     res.sendFile(dir + `custom-sw.${clientVersion}.js`);
     // })
-}
-else {
-    app.get('/iframe*', (req, res, next) => {
-        res.sendFile(dir + 'iframe.html');
-    })
+} else {
+    app.get("/iframe*", (req, res, next) => {
+        res.sendFile(dir + "iframe.html");
+    });
 
-    app.get('/custom-sw.js*', (req, res, next) => {
-        res.sendFile(dir + 'custom-sw.js');
-    })
+    app.get("/custom-sw.js*", (req, res, next) => {
+        res.sendFile(dir + "custom-sw.js");
+    });
 }
 
 // const dir = `${__dirname}/public/`;
@@ -204,31 +194,32 @@ else {
 //     res.sendFile(dir + 'hot.js');
 // })
 
+app.get("/favicon.ico", (req, res, next) => {
+    res.sendFile(dir + "favicon.ico");
+});
 
-app.get('/favicon.ico', (req, res, next) => {
-    res.sendFile(dir + 'favicon.ico');
-})
+app.get("/stats.html", (req, res, next) => {
+    res.sendFile(dir + "stats.html");
+});
 
-app.get('/stats.html', (req, res, next) => {
-    res.sendFile(dir + 'stats.html');
-})
+app.get("/play-favicon.ico", (req, res, next) => {
+    res.sendFile(dir + "play-favicon.ico");
+});
 
-app.get('/play-favicon.ico', (req, res, next) => {
-    res.sendFile(dir + 'play-favicon.ico');
-})
+app.get("/acos-logo.png", (req, res, next) => {
+    res.sendFile(dir + "/acos-logo.png");
+});
 
-app.get('/acos-logo.png', (req, res, next) => {
-    res.sendFile(dir + '/acos-logo.png');
-})
+app.get("/acos-logo-large.png", (req, res, next) => {
+    res.sendFile(dir + "/acos-logo-large.png");
+});
 
-
-app.get('/acos-logo-large.png', (req, res, next) => {
-    res.sendFile(dir + '/acos-logo-large.png');
-})
-
-app.get('/acos-logo-combined.png', (req, res, next) => {
-    res.sendFile(dir + '/acos-logo-combined.png');
-})
+app.get("/acos-logo-combined.png", (req, res, next) => {
+    res.sendFile(dir + "/acos-logo-combined.png");
+});
+app.get("/acos-logo-2025.webp", (req, res, next) => {
+    res.sendFile(dir + "/acos-logo-2025.webp");
+});
 
 let socialAuthenticationIfAvailable = social.authIfAvailable();
 
@@ -243,54 +234,47 @@ app.use(person.routesPublic());
 
 let socialAuthentication = social.auth();
 
-
 app.use(NotificationsAPI(socialAuthentication));
 app.use(person.routes(socialAuthentication));
 app.use(devgame.routes(socialAuthentication));
 app.use(game.actionRoutes(socialAuthentication));
 app.use(leaderboard.actionRoutes(socialAuthentication));
 
-app.use('/sitemap.txt', (req, res, next) => {
-    res.setHeader('Content-Type', 'text/plain')
+app.use("/sitemap.txt", (req, res, next) => {
+    res.setHeader("Content-Type", "text/plain");
     renderSITEMAP(req, res);
-})
+});
 
-app.use('./well-known//microsoft-identity-association.json', (req, res, next) => {
+app.use("./well-known//microsoft-identity-association.json", (req, res, next) => {
     res.json({
-        "associatedApplications": [
+        associatedApplications: [
             {
-                "applicationId": "dc1dc7b1-7e6d-4b1b-8325-c69f153dc45d"
-            }
-        ]
+                applicationId: "dc1dc7b1-7e6d-4b1b-8325-c69f153dc45d",
+            },
+        ],
     });
-})
+});
 
-app.use('/robots.txt', (req, res, next) => {
-    res.setHeader('Content-Type', 'text/plain')
+app.use("/robots.txt", (req, res, next) => {
+    res.setHeader("Content-Type", "text/plain");
     renderRobotsTxt(req, res);
-})
+});
 
 if (isProduction) {
-    app.use('/*', (req, res, next) => {
-        if (req.path.indexOf("/api/") > -1)
-            return next();
+    app.use("/*", (req, res, next) => {
+        if (req.path.indexOf("/api/") > -1) return next();
         // res.setHeader('Content-Encoding', 'gzip')
-        res.setHeader('Content-Type', 'text/html')
+        res.setHeader("Content-Type", "text/html");
         // res.sendFile(dir + 'index.html');
         renderHTML(req, res);
-    })
-}
-else {
-    app.use('/*', (req, res, next) => {
-        if (req.path.indexOf("/api/") > -1)
-            return next();
+    });
+} else {
+    app.use("/*", (req, res, next) => {
+        if (req.path.indexOf("/api/") > -1) return next();
         // renderHTML(req, res);
-        res.sendFile(dir + 'index-localhost.html');
-    })
+        res.sendFile(dir + "index-localhost.html");
+    });
 }
-
-
-
 
 app.use((err, req, res, next) => {
     console.log(err);
@@ -298,21 +282,20 @@ app.use((err, req, res, next) => {
         err.send(res);
         return;
     }
-    res.status(400).json({ ecode: 'E_INVALID_API' });
-})
-
-app.use((req, res, next) => {
-    res.status(400).json({ ecode: 'E_INVALID_API' });
-})
-
-httpServer.listen(PORT, function () {
-    var host = httpServer.address().address
-    var port = httpServer.address().port
-    console.log('App listening at http://%s:%s', host, port)
+    res.status(400).json({ ecode: "E_INVALID_API" });
 });
 
+app.use((req, res, next) => {
+    res.status(400).json({ ecode: "E_INVALID_API" });
+});
 
-process.on('SIGINT', function () {
-    console.log('SIGINT');
+httpServer.listen(PORT, function () {
+    var host = httpServer.address().address;
+    var port = httpServer.address().port;
+    console.log("App listening at http://%s:%s", host, port);
+});
+
+process.on("SIGINT", function () {
+    console.log("SIGINT");
     process.exit();
 });

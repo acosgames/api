@@ -1,24 +1,22 @@
-const passport = require('passport');
-const credutil = require('shared/util/credentials');
-const { Router } = require('express');
-const GoogleAuth = require('./google');
-const MicrosoftAuth = require('./microsoft');
-const GithubAuth = require('./github');
-const FacebookAuth = require('./facebook');
+const passport = require("passport");
+const credutil = require("shared/util/credentials");
+const { Router } = require("express");
+const GoogleAuth = require("./google");
+const MicrosoftAuth = require("./microsoft");
+const GithubAuth = require("./github");
+const FacebookAuth = require("./facebook");
 
-const MySQL = require('shared/services/mysql.js');
+const MySQL = require("shared/services/mysql.js");
 const mysql = new MySQL();
 
-const PersonService = require('shared/services/person');
-const persons = new PersonService();
-const fs = require('fs');
-const { GeneralError } = require('shared/util/errorhandler');
+const persons = require("shared/services/person");
+// const persons = new PersonService();
+const fs = require("fs");
+const { GeneralError } = require("shared/util/errorhandler");
 
-const JWT_PRIVATE_KEY = fs.readFileSync('./src/credentials/jwtRS256.key');
+const JWT_PRIVATE_KEY = fs.readFileSync("./src/credentials/jwtRS256.key");
 
-
-const { getCountry } = require('shared/services/country');
-
+const { getCountry } = require("shared/services/country");
 
 const creds = credutil();
 
@@ -37,7 +35,7 @@ module.exports = class SocialAuth {
 
     initialize() {
         this.router.use(passport.initialize());
-        passport.use(this.google.strategy())
+        passport.use(this.google.strategy());
         passport.use(this.microsoft.strategy());
         passport.use(this.github.strategy());
         passport.use(this.facebook.strategy());
@@ -52,11 +50,10 @@ module.exports = class SocialAuth {
     }
 
     authIfAvailable() {
-        return (async (req, res, next) => {
-
-            let jwtToken = req.cookies['X-API-KEY'];
-            if (jwtToken == 'undefined' || !jwtToken) {
-                jwtToken = req.header('X-API-KEY');
+        return async (req, res, next) => {
+            let jwtToken = req.cookies["X-API-KEY"];
+            if (jwtToken == "undefined" || !jwtToken) {
+                jwtToken = req.header("X-API-KEY");
                 if (!jwtToken) {
                     next();
                     return;
@@ -71,22 +68,19 @@ module.exports = class SocialAuth {
                 }
 
                 req.user = user;
-            }
-            catch (e) {
-            }
+            } catch (e) {}
 
             next();
-        });
+        };
     }
 
     auth() {
-        return (async (req, res, next) => {
-
-            let jwtToken = req.cookies['X-API-KEY'];
-            if (jwtToken == 'undefined' || !jwtToken) {
-                jwtToken = req.header('X-API-KEY');
+        return async (req, res, next) => {
+            let jwtToken = req.cookies["X-API-KEY"];
+            if (jwtToken == "undefined" || !jwtToken) {
+                jwtToken = req.header("X-API-KEY");
                 if (!jwtToken) {
-                    res.json({ ecode: 'E_NOTAUTHORIZED' });
+                    res.json({ ecode: "E_NOTAUTHORIZED" });
                     return;
                 }
             }
@@ -94,32 +88,35 @@ module.exports = class SocialAuth {
             try {
                 let user = await persons.decodeUserToken(jwtToken);
                 if (!user) {
-                    res.json({ ecode: 'E_NOTAUTHORIZED' });
+                    res.json({ ecode: "E_NOTAUTHORIZED" });
                     return;
                 }
 
                 req.user = user;
-            }
-            catch (e) {
-                res.json({ ecode: 'E_NOTAUTHORIZED' });
+            } catch (e) {
+                res.json({ ecode: "E_NOTAUTHORIZED" });
                 return;
             }
 
             next();
-        });
+        };
     }
 
     async logout(req, res) {
-
         //clear the cookie, and delete the user if they were a temporary user
         try {
-            let jwtToken = req.cookies['X-API-KEY'];
-            if (jwtToken == 'undefined' || !jwtToken) {
-                res.json({ 'status': 'success' })
+            let jwtToken = req.cookies["X-API-KEY"];
+            if (jwtToken == "undefined" || !jwtToken) {
+                res.json({ status: "success" });
                 return;
             }
 
-            res.cookie('X-API-KEY', '', { maxAge: Date.now(), httpOnly: true, SameSite: 'Strict', overwrite: true });
+            res.cookie("X-API-KEY", "", {
+                maxAge: Date.now(),
+                httpOnly: true,
+                SameSite: "Strict",
+                overwrite: true,
+            });
 
             let user = await persons.decodeUserToken(jwtToken);
             if (user) {
@@ -127,44 +124,78 @@ module.exports = class SocialAuth {
                 if (!user.email) {
                     try {
                         let result = await persons.deleteUser(user);
-                    }
-                    catch (e) {
+                    } catch (e) {
                         console.error(e);
                     }
                 }
             }
-        }
-        catch (e) {
-            res.json({ 'status': 'success' })
+        } catch (e) {
+            res.json({ status: "success" });
             return;
         }
 
         //respond with success
-        res.json({ 'status': 'success' })
+        res.json({ status: "success" });
     }
 
     routes() {
+        this.router.post("/login/temp", this.apiCreateTempUser.bind(this));
 
-        this.router.post('/login/temp', this.apiCreateTempUser.bind(this));
+        this.router.get("/logout", this.logout);
+        this.router.get(
+            "/login/google",
+            passport.authenticate("google", { session: false })
+        );
+        this.router.get(
+            "/oauth/google",
+            passport.authenticate("google", {
+                failureRedirect: "/",
+                session: false,
+            }),
+            this.redirectSocial
+        );
 
-        this.router.get('/logout', this.logout);
-        this.router.get('/login/google', passport.authenticate('google', { session: false }));
-        this.router.get('/oauth/google', passport.authenticate('google', { failureRedirect: '/', session: false }), this.redirectSocial);
+        this.router.get(
+            "/login/microsoft",
+            passport.authenticate("microsoft", { session: false })
+        );
+        this.router.get(
+            "/oauth/microsoft",
+            passport.authenticate("microsoft", {
+                failureRedirect: "/",
+                session: false,
+            }),
+            this.redirectSocial
+        );
 
-        this.router.get('/login/microsoft', passport.authenticate('microsoft', { session: false }));
-        this.router.get('/oauth/microsoft', passport.authenticate('microsoft', { failureRedirect: '/', session: false }), this.redirectSocial);
+        this.router.get(
+            "/login/facebook",
+            passport.authenticate("facebook", { session: false })
+        );
+        this.router.get(
+            "/oauth/facebook",
+            passport.authenticate("facebook", {
+                failureRedirect: "/",
+                session: false,
+            }),
+            this.redirectSocial
+        );
 
-        this.router.get('/login/facebook', passport.authenticate('facebook', { session: false }));
-        this.router.get('/oauth/facebook', passport.authenticate('facebook', { failureRedirect: '/', session: false }), this.redirectSocial);
-
-
-        this.router.get('/login/github', passport.authenticate('github', { session: false }));
-        this.router.get('/oauth/github', passport.authenticate('github', { failureRedirect: '/', session: false }), this.redirectSocial);
-
+        this.router.get(
+            "/login/github",
+            passport.authenticate("github", { session: false })
+        );
+        this.router.get(
+            "/oauth/github",
+            passport.authenticate("github", {
+                failureRedirect: "/",
+                session: false,
+            }),
+            this.redirectSocial
+        );
 
         return this.router;
     }
-
 
     async apiCreateTempUser(req, res, next) {
         try {
@@ -172,15 +203,17 @@ module.exports = class SocialAuth {
             // let countrycode = getCountry(ip);
 
             let displayname = req.body?.displayname;
-            let portraitid = req.body?.portraitid || Math.floor(Math.random() * (2104 - 1 + 1) + 1)
-            let countrycode = req.body?.countrycode || 'US';
+            let portraitid =
+                req.body?.portraitid ||
+                Math.floor(Math.random() * (2104 - 1 + 1) + 1);
+            let countrycode = req.body?.countrycode || "US";
             if (!displayname) {
                 res.json({ ecode: "E_MISSING_DISPLAYNAME" });
                 return;
             }
 
             if (displayname) {
-                displayname = displayname.replace(/[^A-Za-z0-9\_]/ig, '');
+                displayname = displayname.replace(/[^A-Za-z0-9\_]/gi, "");
 
                 if (displayname.length < 3) {
                     res.json({ ecode: "E_DISPLAYNAME_TOOSHORT" });
@@ -190,10 +223,14 @@ module.exports = class SocialAuth {
 
             let existingUser = await persons.findUser({ displayname }, true);
             if (existingUser) {
-                throw new GeneralError('E_PERSON_DUPENAME');
+                throw new GeneralError("E_PERSON_DUPENAME");
             }
 
-            let user = await persons.createUser({ displayname, countrycode, portraitid });
+            let user = await persons.createUser({
+                displayname,
+                countrycode,
+                portraitid,
+            });
 
             let tokenUser = {
                 // id: user.id,
@@ -204,9 +241,12 @@ module.exports = class SocialAuth {
                 isdev: user.isdev,
                 // github: user.github,
                 // membersince: user.membersince
-            }
+            };
 
-            let token = await persons.encodeUserToken(tokenUser, JWT_PRIVATE_KEY);
+            let token = await persons.encodeUserToken(
+                tokenUser,
+                JWT_PRIVATE_KEY
+            );
             let decodedToken = await persons.decodeUserToken(token);
 
             let filteredUser = {
@@ -224,53 +264,52 @@ module.exports = class SocialAuth {
                 ranks: [],
                 devgames: [],
                 token,
-                exp: decodedToken.exp
-            }
+                exp: decodedToken.exp,
+            };
 
-            res.cookie('X-API-KEY', token, { httpOnly: true, SameSite: 'Strict', overwrite: true })
+            res.cookie("X-API-KEY", token, {
+                httpOnly: true,
+                SameSite: "Strict",
+                overwrite: true,
+            });
             res.json(filteredUser);
-        }
-        catch (e) {
+        } catch (e) {
             next(e);
         }
     }
 
-
     async redirectSocial(req, res) {
         let websiteurl = creds.platform.website.url;
 
-        if (!req.user)
-            res.redirect(websiteurl)
-
-
+        if (!req.user) res.redirect(websiteurl);
 
         // console.log(req.session.passport);
         let user = req.user;
 
-
         try {
-            let jwtToken = req.cookies['X-API-KEY'];
+            let jwtToken = req.cookies["X-API-KEY"];
             if (jwtToken) {
                 let tokenUser = await persons.decodeUserToken(jwtToken);
-                if (!(tokenUser?.email)) {
+                if (!tokenUser?.email) {
                     tokenUser.email = user.email;
                     user = Object.assign({}, user, tokenUser);
-                    let result = await persons.updateUser({ shortid: user.shortid, email: user.email, github: user.github, github_id: user.github_id });
+                    let result = await persons.updateUser({
+                        shortid: user.shortid,
+                        email: user.email,
+                        github: user.github,
+                        github_id: user.github_id,
+                    });
                 }
             }
-        }
-        catch (e) {
+        } catch (e) {
             console.log(e);
-            if (e.message == 'jwt expired') {
-
+            if (e.message == "jwt expired") {
                 //let it create new token by going to code below
-            }
-            else {
-                res.redirect(`${websiteurl}/login/success`)
+            } else {
+                res.redirect(`${websiteurl}/login/success`);
                 // res.json({ ecode: 'E_INVALID_USER_CREATE' });
                 return;
             }
-
         }
 
         // let ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress
@@ -278,11 +317,13 @@ module.exports = class SocialAuth {
 
         // user.countrycode = user.countrycode || countrycode;
 
-
         try {
             let dbUser = await persons.findOrCreateUser(user);
             if (!dbUser) {
-                throw { ecode: "E_INVALID_USER_CREATE", info: { dbUser, user } };
+                throw {
+                    ecode: "E_INVALID_USER_CREATE",
+                    info: { dbUser, user },
+                };
             }
 
             // dbUser.auth = true;
@@ -296,12 +337,18 @@ module.exports = class SocialAuth {
                 isdev: user.isdev,
                 github: user.github ? 1 : 0,
                 // membersince: user.membersince
-            }
-            let token = await persons.encodeUserToken(tokenUser, JWT_PRIVATE_KEY);
+            };
+            let token = await persons.encodeUserToken(
+                tokenUser,
+                JWT_PRIVATE_KEY
+            );
             req.user = dbUser;
 
-
-            res.cookie('X-API-KEY', token, { httpOnly: true, SameSite: 'Strict', overwrite: true })
+            res.cookie("X-API-KEY", token, {
+                httpOnly: true,
+                SameSite: "Strict",
+                overwrite: true,
+            });
 
             // if (!dbUser.displayname || dbUser.displayname.length == 0 || dbUser.displayname == dbUser.apikey) {
             //     //res.setHeader('Set-Cookie', 'X-API-KEY=' + dbUser.apikey + '; HttpOnly');
@@ -315,15 +362,12 @@ module.exports = class SocialAuth {
             // }
 
             //res.setHeader('Set-Cookie', 'X-API-KEY=' + dbUser.apikey + '; HttpOnly');
-            res.redirect(`${websiteurl}/login/success`)
+            res.redirect(`${websiteurl}/login/success`);
             return;
-        }
-        catch (e) {
+        } catch (e) {
             console.error(e);
-
         }
 
         res.redirect(`${websiteurl}/login/`);
     }
-
-}
+};

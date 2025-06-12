@@ -1,19 +1,18 @@
-const credutil = require('shared/util/credentials');
-const { Router } = require('express');
+const credutil = require("shared/util/credentials");
+const { Router } = require("express");
 
-const MySQL = require('shared/services/mysql.js');
+const MySQL = require("shared/services/mysql.js");
 const mysql = new MySQL();
 
-const { GeneralError } = require('shared/util/errorhandler');
+const { GeneralError } = require("shared/util/errorhandler");
 
-const GameService = require('shared/services/game');
-const game = new GameService();
+const game = require("shared/services/game");
+// const game = new GameService();
 
-const LeaderboardService = require('shared/services/leaderboard');
-const leaderboard = new LeaderboardService();
+const leaderboard = require("shared/services/leaderboard");
+// const leaderboard = new LeaderboardService();
 
-const storage = require('./storage');
-
+const storage = require("./storage");
 
 module.exports = class LeaderboardAPI {
     constructor(credentials) {
@@ -22,20 +21,43 @@ module.exports = class LeaderboardAPI {
         this.actionRouter = new Router();
     }
 
-
     routes(middleware) {
-        middleware = middleware || ((req, res, next) => { next() })
+        middleware =
+            middleware ||
+            ((req, res, next) => {
+                next();
+            });
 
-        this.router.get('/api/v1/game/rankings/:game_slug/:countrycode', middleware, this.apiFindGameRankNational.bind(this));
-        this.router.get('/api/v1/game/rankings/:game_slug', middleware, this.apiFindGameRankGlobal.bind(this));
-        this.router.get('/api/v1/game/rankings/division/:game_slug/:division', middleware, this.apiFindGameRankDivision.bind(this));
-        this.router.get('/api/v1/game/lbhs/:game_slug', middleware, this.apiFindGameLeaderboardHighscore.bind(this));
+        this.router.get(
+            "/api/v1/game/rankings/:game_slug/:countrycode",
+            middleware,
+            this.apiFindGameRankNational.bind(this)
+        );
+        this.router.get(
+            "/api/v1/game/rankings/:game_slug",
+            middleware,
+            this.apiFindGameRankGlobal.bind(this)
+        );
+        this.router.get(
+            "/api/v1/game/rankings/division/:game_slug/:division",
+            middleware,
+            this.apiFindGameRankDivision.bind(this)
+        );
+        this.router.get(
+            "/api/v1/game/lbhs/:game_slug",
+            middleware,
+            this.apiFindGameLeaderboardHighscore.bind(this)
+        );
 
         return this.router;
     }
 
     actionRoutes(middleware) {
-        middleware = middleware || ((req, res, next) => { next() })
+        middleware =
+            middleware ||
+            ((req, res, next) => {
+                next();
+            });
 
         return this.actionRouter;
     }
@@ -46,12 +68,16 @@ module.exports = class LeaderboardAPI {
             let user = req.user;
             let game_slug = req.params.game_slug;
             let countrycode = req.params.countrycode;
-            g = await leaderboard.findGameRankNational(game_slug, user?.shortid, user?.displayname, countrycode);
+            g = await leaderboard.findGameRankNational(
+                game_slug,
+                user?.shortid,
+                user?.displayname,
+                countrycode
+            );
 
             // redisRankings = await leaderboard.getRatingLeaderboardRedis({ game_slug, countrycode, season: 0 });
             // console.log(redisRankings);
-        }
-        catch (e) {
+        } catch (e) {
             next(e);
             return;
         }
@@ -66,8 +92,7 @@ module.exports = class LeaderboardAPI {
             let game_slug = req.params.game_slug;
             let division_id = req.params.division;
             g = await leaderboard.findGameRankDivision(game_slug, division_id);
-        }
-        catch (e) {
+        } catch (e) {
             next(e);
             return;
         }
@@ -80,9 +105,12 @@ module.exports = class LeaderboardAPI {
         try {
             let user = req.user;
             let game_slug = req.params.game_slug;
-            g = await leaderboard.findGameRankGlobal(game_slug, user?.shortid, user?.displayname);
-        }
-        catch (e) {
+            g = await leaderboard.findGameRankGlobal(
+                game_slug,
+                user?.shortid,
+                user?.displayname
+            );
+        } catch (e) {
             next(e);
             return;
         }
@@ -96,9 +124,12 @@ module.exports = class LeaderboardAPI {
         try {
             let user = req.user;
             let game_slug = req.params.game_slug;
-            g = await leaderboard.findGameLeaderboardHighscore(game_slug, user?.shortid, user?.displayname);
-        }
-        catch (e) {
+            g = await leaderboard.findGameLeaderboardHighscore(
+                game_slug,
+                user?.shortid,
+                user?.displayname
+            );
+        } catch (e) {
             next(e);
             return;
         }
@@ -106,5 +137,4 @@ module.exports = class LeaderboardAPI {
         res.json(g);
         return;
     }
-
-}
+};

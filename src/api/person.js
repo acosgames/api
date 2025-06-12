@@ -4,8 +4,8 @@ const { Router } = require("express");
 const MySQL = require("shared/services/mysql.js");
 const mysql = new MySQL();
 
-const PersonService = require("shared/services/person");
-const persons = new PersonService();
+const persons = require("shared/services/person");
+// const persons = new PersonService();
 
 const fs = require("fs");
 const { GeneralError } = require("shared/util/errorhandler");

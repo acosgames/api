@@ -1,8 +1,8 @@
 const { Router } = require("express");
 
-const PersonService = require("shared/services/person");
+const person = require("shared/services/person");
 const { GeneralError } = require("shared/util/errorhandler");
-const person = new PersonService();
+// const person = new PersonService();
 
 module.exports = function routes(middleware) {
     let router = new Router();
