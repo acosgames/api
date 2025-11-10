@@ -1,16 +1,16 @@
-const credutil = require("shared/util/credentials");
+const credutil = require('shared/util/credentials');
 const { Router } = require("express");
 
-const MySQL = require("shared/services/mysql.js");
+const MySQL = require('shared/services/mysql.js');
 const mysql = new MySQL();
 
-const { GeneralError } = require("shared/util/errorhandler");
+const { GeneralError } = require('shared/util/errorhandler');
 
-const game = require("shared/services/game");
+const game = require('shared/services/game');
 // const game = new GameService();
 
 const storage = require("./storage");
-const achievements = require("shared/services/achievements");
+const achievements = require('shared/services/achievements');
 
 module.exports = class GameAPI {
     constructor(credentials) {

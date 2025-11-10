@@ -1,15 +1,15 @@
-const credutil = require("shared/util/credentials");
+const credutil = require('shared/util/credentials');
 const { Router } = require("express");
 
-const MySQL = require("shared/services/mysql.js");
+const MySQL = require('shared/services/mysql.js');
 const mysql = new MySQL();
 
-const { GeneralError } = require("shared/util/errorhandler");
+const { GeneralError } = require('shared/util/errorhandler');
 
-const game = require("shared/services/game");
+const game = require('shared/services/game');
 // const game = new GameService();
 
-const leaderboard = require("shared/services/leaderboard");
+const leaderboard = require('shared/services/leaderboard');
 // const leaderboard = new LeaderboardService();
 
 const storage = require("./storage");

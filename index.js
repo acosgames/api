@@ -7,8 +7,8 @@ const webpush = require("web-push");
 
 // const MemoryStore = require('memorystore')(session)
 // var FileStore = require('session-file-store')(session);
-const profiler = require("shared/util/profiler");
-const { GeneralError } = require("shared/util/errorhandler");
+const profiler = require('shared/util/profiler');
+const { GeneralError } = require('shared/util/errorhandler');
 
 const { getVersion } = require("./src/api/version");
 
@@ -17,7 +17,7 @@ const clientVersion = getVersion() || 0;
 const NODE_ENV = process.env.NODE_ENV;
 const isProduction = NODE_ENV == "production";
 
-const credutil = require("shared/util/credentials");
+const credutil = require('shared/util/credentials');
 const credentials = credutil();
 const PORT = process.env.PORT || credentials.platform.api.port;
 const path = require("path");

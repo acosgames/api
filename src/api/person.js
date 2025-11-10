@@ -1,15 +1,15 @@
-const credutil = require("shared/util/credentials");
+const credutil = require('shared/util/credentials');
 const { Router } = require("express");
 
-const MySQL = require("shared/services/mysql.js");
+const MySQL = require('shared/services/mysql.js');
 const mysql = new MySQL();
 
-const persons = require("shared/services/person");
+const persons = require('shared/services/person');
 // const persons = new PersonService();
 
 const fs = require("fs");
-const { GeneralError } = require("shared/util/errorhandler");
-const { getCountry } = require("shared/services/country");
+const { GeneralError } = require('shared/util/errorhandler');
+const { getCountry } = require('shared/services/country');
 const JWT_PRIVATE_KEY = fs.readFileSync("./src/credentials/jwtRS256.key");
 
 module.exports = class PersonAPI {

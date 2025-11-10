@@ -1,13 +1,13 @@
 var fs = require("fs");
-const ObjectStorageService = require("shared/services/objectstorage");
+const ObjectStorageService = require('shared/services/objectstorage');
 const s3 = new ObjectStorageService();
 
 const { PassThrough, Readable, Transform } = require("stream");
 const zlib = require("zlib");
 const Busboy = require("busboy");
 
-const mimetypes = require("shared/util/mimetypes");
-const { genShortId } = require("shared/util/idgen");
+const mimetypes = require('shared/util/mimetypes');
+const { genShortId } = require('shared/util/idgen');
 
 const SERVER_BUCKET = "acospriv";
 const CLIENT_BUCKET = "acospub";

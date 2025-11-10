@@ -1,5 +1,5 @@
-const CLIENTVERSION = require("shared/model/versions.json");
-const gameService = require("shared/services/game");
+const CLIENTVERSION = require('shared/model/versions.json');
+const gameService = require('shared/services/game');
 // const gameService = new GameService();
 
 const defaultDescription =
