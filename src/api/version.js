@@ -1,9 +1,9 @@
 
 // const MySQL = require('shared/services/mysql.js');
 // const mysql = new MySQL();
-// const cache = require('shared/services/cache');
+// const cache = require('shared/services/cache.js');
 
-// const { GeneralError } = require('shared/util/errorhandler');
+// const { GeneralError } = require('shared/util/errorhandler.js');
 
 const versions = require('shared/model/versions.json');
 

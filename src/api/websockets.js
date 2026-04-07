@@ -1,10 +1,10 @@
-const credutil = require('shared/util/credentials');
+const credutil = require('shared/util/credentials.js');
 const { Router } = require("express");
 
 const MySQL = require('shared/services/mysql.js');
 const mysql = new MySQL();
 
-// const PersonService = require('shared/services/person');
+// const PersonService = require('shared/services/person.js');
 // const persons = new PersonService();
 
 const uws = require("uWebSockets.js").App();

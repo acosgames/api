@@ -1,5 +1,5 @@
 const passport = require("passport");
-const credutil = require('shared/util/credentials');
+const credutil = require('shared/util/credentials.js');
 const { Router } = require("express");
 const GoogleAuth = require("./google");
 const MicrosoftAuth = require("./microsoft");
@@ -9,14 +9,14 @@ const FacebookAuth = require("./facebook");
 const MySQL = require('shared/services/mysql.js');
 const mysql = new MySQL();
 
-const persons = require('shared/services/person');
+const persons = require('shared/services/person.js');
 // const persons = new PersonService();
 const fs = require("fs");
-const { GeneralError } = require('shared/util/errorhandler');
+const { GeneralError } = require('shared/util/errorhandler.js');
 
-const JWT_PRIVATE_KEY = fs.readFileSync("./src/credentials/jwtRS256.key");
+const JWT_PRIVATE_KEY = fs.readFileSync("./credential/jwtRS256.key");
 
-const { getCountry } = require('shared/services/country');
+const { getCountry } = require('shared/services/country.js');
 
 const creds = credutil();
 
@@ -68,7 +68,7 @@ module.exports = class SocialAuth {
                 }
 
                 req.user = user;
-            } catch (e) {}
+            } catch (e) { console.error(e) }
 
             next();
         };
@@ -94,6 +94,7 @@ module.exports = class SocialAuth {
 
                 req.user = user;
             } catch (e) {
+                console.error(e);
                 res.json({ ecode: "E_NOTAUTHORIZED" });
                 return;
             }
@@ -130,6 +131,7 @@ module.exports = class SocialAuth {
                 }
             }
         } catch (e) {
+            console.error(e);
             res.json({ status: "success" });
             return;
         }
@@ -255,14 +257,11 @@ module.exports = class SocialAuth {
                 displayname: user.displayname,
                 countrycode: countrycode,
                 portraitid: portraitid,
-                email: user.email || null,
                 github: user.github || null,
                 membersince: user.membersince,
                 level: user.level,
                 points: user.points,
                 isdev: user.isdev,
-                ranks: [],
-                devgames: [],
                 token,
                 exp: decodedToken.exp,
             };
@@ -274,6 +273,7 @@ module.exports = class SocialAuth {
             });
             res.json(filteredUser);
         } catch (e) {
+            console.error(e);
             next(e);
         }
     }
@@ -302,7 +302,7 @@ module.exports = class SocialAuth {
                 }
             }
         } catch (e) {
-            console.log(e);
+            console.error(e);
             if (e.message == "jwt expired") {
                 //let it create new token by going to code below
             } else {

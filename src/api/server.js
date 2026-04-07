@@ -1,7 +1,7 @@
-const credutil = require('shared/util/credentials');
+const credutil = require('shared/util/credentials.js');
 const { Router } = require('express');
 
-const ServerRemoteService = require('shared/services/instanceremote');
+const ServerRemoteService = require('shared/services/instanceremote.js');
 const remote = new ServerRemoteService();
 
 

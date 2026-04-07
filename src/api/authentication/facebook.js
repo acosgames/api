@@ -2,7 +2,7 @@
 
 const FacebookStrategy = require('passport-facebook').Strategy;
 // const jwt = require('jsonwebtoken');
-const credutil = require('shared/util/credentials');
+const credutil = require('shared/util/credentials.js');
 
 module.exports = class FacebookAuth {
     constructor(credentials) {

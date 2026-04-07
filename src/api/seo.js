@@ -1,6 +1,7 @@
 const CLIENTVERSION = require('shared/model/versions.json');
-const gameService = require('shared/services/game');
+const gameService = require('shared/services/game.js');
 // const gameService = new GameService();
+const path = require('path');
 
 const defaultDescription =
     "Play or develop your own competitive online web game.  The platform supports realtime Turn-based and Trivia style games.  You must first become a developer in the acosgames GitHub Organization. Simply go to Developer Zone on ACOS to start.";
@@ -81,6 +82,8 @@ function getPageMeta(urlpath) {
     return page;
 }
 
+const distFiles = path.join(__dirname, "../../public");
+
 async function renderHTML(req, res) {
     let urlpath = req.originalUrl;
     console.log(urlpath);
@@ -89,6 +92,16 @@ async function renderHTML(req, res) {
     if (urlpath.indexOf("/g/") > -1) {
         page = await getGameMeta(urlpath);
     } else page = getPageMeta(urlpath) || defaultPage;
+    
+    let mainJSFile = `https://assets.acos.games/static/bundle.${CLIENTVERSION.client.version}.js`;
+    let cssLinksString = '';
+    if (process.env.DEBUG) {
+        const manifest = require(distFiles + "/.vite/manifest.json");
+        let manifestCSS = manifest["index.html"].css;
+        let cssLinks = manifestCSS.map((css) => `<link rel="stylesheet" href="/${css}" />`);
+        cssLinksString = cssLinks.join("\n");
+        mainJSFile = '/' + manifest["index.html"].file;
+    }
 
     let output = `<!DOCTYPE html>
         <html lang="en">
@@ -126,6 +139,7 @@ async function renderHTML(req, res) {
                 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
                 <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,500;0,600;0,800;1,500&display=swap" rel="stylesheet">
                 <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@300;400;500;600;700&family=Inter:wght@100;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+                ${cssLinksString}
                 <script async src="https://www.googletagmanager.com/gtag/js?id=G-HC09PY1QY2"></script>
                 <script>window.dataLayer = window.dataLayer || [];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());gtag('config', 'G-HC09PY1QY2');</script>
                 <style>
@@ -202,9 +216,9 @@ async function renderHTML(req, res) {
                 </style>
             </head>
             <body>
-            <div class="loader">Loading...</div>
+            <div id="root"></div>
                 
-                <script src='https://assets.acos.games/static/bundle.${CLIENTVERSION.client.version}.js'></script>
+                <script src='${mainJSFile}'></script>
             </body>
         </html>`;
 

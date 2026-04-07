@@ -1,20 +1,20 @@
-const credutil = require('shared/util/credentials');
+const credutil = require('shared/util/credentials.js');
 const { Router } = require("express");
 
 const MySQL = require('shared/services/mysql.js');
 const mysql = new MySQL();
 
-// const UploadFileService = require('shared/services/uploadfile');
+// const UploadFileService = require('shared/services/uploadfile.js');
 // const upload = new UploadFileService();
 
-const DevGameService = require('shared/services/devgame');
+const DevGameService = require('shared/services/devgame.js');
 const devgame = new DevGameService();
 
-const { genShortId } = require('shared/util/idgen');
+const { genShortId } = require('shared/util/idgen.js');
 
-const { GeneralError } = require('shared/util/errorhandler');
+const { GeneralError } = require('shared/util/errorhandler.js');
 
-const gh = require('shared/services/github');
+const gh = require('shared/services/github.js');
 
 const DevAuth = require("./authentication/authdev");
 const devauth = new DevAuth();

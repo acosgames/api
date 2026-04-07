@@ -1,16 +1,16 @@
-const credutil = require('shared/util/credentials');
+const credutil = require('shared/util/credentials.js');
 const { Router } = require("express");
 
 const MySQL = require('shared/services/mysql.js');
 const mysql = new MySQL();
 
-const persons = require('shared/services/person');
+const persons = require('shared/services/person.js');
 // const persons = new PersonService();
 
 const fs = require("fs");
-const { GeneralError } = require('shared/util/errorhandler');
-const { getCountry } = require('shared/services/country');
-const JWT_PRIVATE_KEY = fs.readFileSync("./src/credentials/jwtRS256.key");
+const { GeneralError } = require('shared/util/errorhandler.js');
+const { getCountry } = require('shared/services/country.js');
+const JWT_PRIVATE_KEY = fs.readFileSync("./credential/jwtRS256.key");
 
 module.exports = class PersonAPI {
     constructor(credentials) {
@@ -95,8 +95,8 @@ module.exports = class PersonAPI {
                 isdev: user.isdev,
                 level: user.level,
                 points: user.points,
-                ranks: user.ranks,
-                devgames: user.devgames,
+                // ranks: user.ranks,
+                // devgames: user.devgames,
             };
 
             filteredUser.token = req.cookies["X-API-KEY"];

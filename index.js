@@ -7,8 +7,8 @@ const webpush = require("web-push");
 
 // const MemoryStore = require('memorystore')(session)
 // var FileStore = require('session-file-store')(session);
-const profiler = require('shared/util/profiler');
-const { GeneralError } = require('shared/util/errorhandler');
+const profiler = require('shared/util/profiler.js');
+const { GeneralError } = require('shared/util/errorhandler.js');
 
 const { getVersion } = require("./src/api/version");
 
@@ -17,7 +17,7 @@ const clientVersion = getVersion() || 0;
 const NODE_ENV = process.env.NODE_ENV;
 const isProduction = NODE_ENV == "production";
 
-const credutil = require('shared/util/credentials');
+const credutil = require('shared/util/credentials.js');
 const credentials = credutil();
 const PORT = process.env.PORT || credentials.platform.api.port;
 const path = require("path");
@@ -137,13 +137,7 @@ app.use(
 
 //VITE - manifest, css, jsx files
 const distFiles = path.join(__dirname, "./public");
-if (process.env.NODE_ENV == "production" || process.env.NODE_ENV == "prod") {
-    const manifest = require(distFiles + "/.vite/manifest.json");
-    let manifestCSS = manifest["src/main.jsx"].css;
-    let cssLinks = manifestCSS.map((css) => `<link rel="stylesheet" href="/${css}" />`);
-    let cssLinksString = cssLinks.join("\n");
-    let mainJSFile = manifest["src/main.jsx"].file;
-}
+
 
 app.use("/manifest.json", (req, res) => {
     res.sendFile(distFiles + "/.vite/manifest.json");
@@ -163,6 +157,27 @@ if (isProduction) {
         res.setHeader("Content-Type", "application/javascript");
         res.sendFile(dir + `custom-sw.${clientVersion}.js`);
     });
+
+    if (process.env.DEBUG) {
+        const manifest = require(distFiles + "/.vite/manifest.json");
+        let manifestCSS = manifest["index.html"].css;
+        let cssLinks = manifestCSS.map((css) => `<link rel="stylesheet" href="/${css}" />`);
+        let cssLinksString = cssLinks.join("\n");
+        mainJSFile = '/' + manifest["index.html"].file;
+
+        for(var css of manifestCSS) {
+            app.get(`/${css}`, (req, res, next) => {
+                res.setHeader("Content-Type", "text/css");
+                res.sendFile(dir + css);
+            });
+        }
+        
+        app.get(mainJSFile, (req, res, next) => {
+            res.setHeader("Content-Type", "application/javascript");
+            res.sendFile(dir + manifest["index.html"].file);
+        });
+    }
+
 
     // app.get(`/custom-sw.${clientVersion}.js*`, (req, res, next) => {
     //     res.setHeader('Content-Encoding', 'gzip')
@@ -260,7 +275,7 @@ app.use("/robots.txt", (req, res, next) => {
     renderRobotsTxt(req, res);
 });
 
-if (isProduction) {
+if (isProduction ) {
     app.use("/*", (req, res, next) => {
         if (req.path.indexOf("/api/") > -1) return next();
         // res.setHeader('Content-Encoding', 'gzip')

@@ -1,4 +1,4 @@
-const cache = require('shared/services/cache');
+const cache = require('shared/services/cache.js');
 
 class Storage {
     constructor() {

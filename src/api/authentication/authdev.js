@@ -1,8 +1,8 @@
 
-const credutil = require('shared/util/credentials');
+const credutil = require('shared/util/credentials.js');
 const { Router } = require('express');
 
-const DevGameService = require('shared/services/devgame');
+const DevGameService = require('shared/services/devgame.js');
 const devgame = new DevGameService();
 
 module.exports = class DevAuth {
