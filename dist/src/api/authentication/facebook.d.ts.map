@@ -1,0 +1,1 @@
+{"version":3,"file":"facebook.d.ts","sourceRoot":"","sources":["../../../../src/api/authentication/facebook.ts"],"names":[],"mappings":"AAOA,MAAM,CAAC,OAAO,OAAO,YAAY;IAC7B,WAAW,EAAE,GAAG,CAAC;IACjB,KAAK,EAAE,IAAI,CAAC;gBACA,WAAW,CAAC,EAAC,GAAG;IAM5B,QAAQ;IAkBF,gBAAgB,CAAC,WAAW,KAAA,EAAE,YAAY,KAAA,EAAE,OAAO,KAAA,EAAE,IAAI,KAAA;CAmBlE"}

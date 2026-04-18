@@ -28,10 +28,13 @@
                 //de()
                 let url = 'https://' + acosURLPrefix + m.payload.game_slug + '/client/client.bundle.' + m.payload.version + '.js'
                 console.log(">>> Loading Client Bundle: ", url)
-
-                let styleUrl = 'https://' + acosURLPrefix + m.payload.game_slug + '/client/assets/client.bundle.' + m.payload.version + '.css'
-                loadStyle(styleUrl)
                 loadJS(url)
+
+                if (m.payload.css) {
+                    let styleUrl = 'https://' + acosURLPrefix + m.payload.game_slug + '/client/assets/client.bundle.' + m.payload.version + '.css'
+                    loadStyle(styleUrl)
+                }
+
             }
         }
         function de() {

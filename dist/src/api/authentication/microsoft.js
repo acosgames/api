@@ -1,0 +1,41 @@
+import PassportMicrosoft from 'passport-microsoft';
+// const jwt = require('jsonwebtoken');
+import credutil from 'shared/util/credentials.js';
+const MSStrategy = PassportMicrosoft.Strategy;
+export default class MicrosoftAuth {
+    credentials;
+    strat;
+    constructor(credentials) {
+        this.credentials = credentials || credutil();
+        this.strat = null;
+    }
+    strategy() {
+        if (this.strat)
+            return this.strat;
+        var self = this;
+        this.strat = new MSStrategy({
+            callbackURL: this.credentials.microsoftauth.redirect_uri, //same URI as registered in Google console portal
+            clientID: this.credentials.microsoftauth.client_id, //replace with copied value from Google console
+            clientSecret: this.credentials.microsoftauth.client_secret,
+            scope: this.credentials.microsoftauth.scope
+        }, self.strategyCallback);
+        return this.strat;
+    }
+    async strategyCallback(accessToken, refreshToken, profile, done) {
+        try {
+            let user_email = profile.emails && profile.emails[0].value; //profile object has the user info
+            //let [user] = await db('users').select(['id', 'name', 'email']).where('email', user_email); //check whether user exist in database
+            let redirect_url = "";
+            if (user_email) {
+                return done(null, { email: user_email }); //redirect_url will get appended to req.user object : passport.js in action
+            }
+            else {
+                return done(null, {});
+            }
+        }
+        catch (error) {
+            done(error);
+        }
+    }
+}
+//# sourceMappingURL=microsoft.js.map

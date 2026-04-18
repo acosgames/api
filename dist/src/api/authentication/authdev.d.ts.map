@@ -1,0 +1,1 @@
+{"version":3,"file":"authdev.d.ts","sourceRoot":"","sources":["../../../../src/api/authentication/authdev.ts"],"names":[],"mappings":"AAOA,MAAM,CAAC,OAAO,OAAO,OAAO;IACxB,WAAW,EAAE,GAAG,CAAC;gBACL,WAAW,CAAC,EAAC,GAAG;IAI5B,IAAI,GAAU,QAAG,EAAE,QAAG,EAAE,SAAI,mBAwB3B;IAED,SAAS;CAGZ"}

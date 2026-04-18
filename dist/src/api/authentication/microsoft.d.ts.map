@@ -1,0 +1,1 @@
+{"version":3,"file":"microsoft.d.ts","sourceRoot":"","sources":["../../../../src/api/authentication/microsoft.ts"],"names":[],"mappings":"AASA,MAAM,CAAC,OAAO,OAAO,aAAa;IAC9B,WAAW,EAAE,GAAG,CAAC;IACjB,KAAK,EAAE,IAAI,CAAC;gBACA,WAAW,CAAC,EAAC,GAAG;IAM5B,QAAQ;IAiBF,gBAAgB,CAAC,WAAW,KAAA,EAAE,YAAY,KAAA,EAAE,OAAO,KAAA,EAAE,IAAI,KAAA;CAelE"}

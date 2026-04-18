@@ -2,10 +2,14 @@
   "name": "api",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "type": "module",
+  "main": "dist/index.js",
   "scripts": {
-    "start": "npm run dev",
-    "dev": "pm2 start index.js --name api --node-args=\"--inspect=10001\" --watch \". ../shared\" --ignore-watch \"sessions public package.json node_modules\"",
+    "start": "concurrently -n tsc,node \"npm:build:watch\" \"npm:start:watch\"",
+    "build": "tsc -p tsconfig.json",
+    "build:watch": "tsc -p tsconfig.json --watch --preserveWatchOutput --noCheck",
+    "start:watch": "node --inspect=9945 --watch --enable-source-maps --watch-preserve-output dist/index.js",
+    "dev": "pm2 start dist/index.js --name api --node-args=\"--inspect=10001\" --watch \"dist ../shared\" --ignore-watch \"sessions public package.json node_modules src\"",
     "dev-gitwebhook": "pm2 start gitwebhook.js --node-args=\"--inspect=10002\" --name gitworker --watch \". ../shared\" --ignore-watch \"sessions/ public/\"",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -41,5 +45,9 @@
     "webpack": "^5.89.0",
     "webpack-dev-middleware": "^6.1.1",
     "webpack-hot-middleware": "^2.25.4"
+  },
+  "devDependencies": {
+    "@types/node": "^24.6.0",
+    "typescript": "^5.9.3"
   }
 }
