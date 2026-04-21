@@ -35,8 +35,8 @@ function S3UploadGameBundles(req, res, cb) {
         let passthroughs = {};
         let s3responses = [];
 
-        let game = req.game;
-
+        let game = req.game; 
+ 
         let files: any = [];
         let existingFiles = {};
         try {
@@ -105,7 +105,36 @@ function S3UploadGameBundles(req, res, cb) {
                     };
 
                     fileStream.pipe(prepass);
-                } else if (fieldName == "client") {
+                }
+                else if (fieldName == "gameSettings") {
+                    filename = "settings." + game.version + ".json";
+                    Key = "g/" + game.game_slug + "/client/" + filename;
+                    Bucket = CLIENT_BUCKET;
+                    ContentType = "application/json";
+                    ACL = "public-read";
+                    Metadata = {
+                        fieldName,
+                        filename,
+                        "Content-Type": ContentType,
+                    };
+
+                    fileStream.pipe(prepass);
+                }
+                else if (fieldName == "gameProtocol") {
+                    filename = "protocol." + game.version + ".json";
+                    Key = "g/" + game.game_slug + "/client/" + filename;
+                    Bucket = CLIENT_BUCKET;
+                    ContentType = "application/json";
+                    ACL = "public-read";
+                    Metadata = {
+                        fieldName,
+                        filename,
+                        "Content-Type": ContentType,
+                    };
+
+                    fileStream.pipe(prepass);
+                }
+                 else if (fieldName == "client") {
                     filename = "client.bundle." + game.version + ".js";
                     Key = "g/" + game.game_slug + "/client/" + filename;
                     Bucket = CLIENT_BUCKET;

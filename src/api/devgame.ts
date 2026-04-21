@@ -227,11 +227,25 @@ export default class DevGameAPI {
                 hasDB = true;
             }
 
-            let hasCSS = req.header("X-GAME-HASCSS");
-            if (!hasDB || hasDB == "no") {
-                hasDB = false;
+            let hasGameSettings = req.header("X-GAME-HASGAMESETTINGS");
+            if (!hasGameSettings || hasGameSettings == "no") {
+                hasGameSettings = false;
             } else {
-                hasDB = true;
+                hasGameSettings = true;
+            }
+
+            let hasGameProtocol = req.header("X-GAME-HASGAMEPROTOCOL");
+            if (!hasGameProtocol || hasGameProtocol == "no") {
+                hasGameProtocol = false;
+            } else {
+                hasGameProtocol = true;
+            }
+
+            let hasCSS = req.header("X-GAME-HASCSS");
+            if (!hasCSS || hasCSS == "no") {
+                hasCSS = false;
+            } else {
+                hasCSS = true;
             }
 
             let screentype = Number(gameSettings.screentype);
@@ -240,19 +254,20 @@ export default class DevGameAPI {
             let screenwidth = Number(gameSettings.screenwidth);
 
             let gameFull = req.game;
-            let gameTest = {
-                game_slug: gameFull.game_slug,
-                version: gameFull.latest_version + 1,
-                screentype,
-                resow,
-                resoh,
-                screenwidth,
-                db: hasDB,
-                css: hasCSS,
-                status: 2,
-            };
 
-            req.game = gameTest;
+            gameFull.version = gameFull.latest_version + 1;
+            gameFull.db = hasDB;
+            gameFull.css = hasCSS;
+            gameFull.screentype = screentype;
+            gameFull.resow = resow;
+            gameFull.resoh = resoh;
+            gameFull.screenwidth = screenwidth;
+            gameFull.protocol = hasGameProtocol;
+            gameFull.settings = hasGameSettings;
+            gameFull.status = 2;
+
+
+            req.game = gameFull;
 
             try {
                 let s3responses = await S3UploadGameBundles(
@@ -281,9 +296,9 @@ export default class DevGameAPI {
 
             console.log(
                 "Upload is completed for ",
-                req.game.game_slug,
+                gameFull.game_slug,
                 "at version",
-                req.game.latest_version
+                gameFull.latest_version
             );
 
             // gameTest = await this.createOrUpdateGameVersion(
@@ -313,18 +328,23 @@ export default class DevGameAPI {
 
             let db = await mysql.begin("createDevGame");
 
-            let dbGame = await devgame.findGame({ apikey }, null, db);
-
-            let gameVersion = await devgame.createGameVersion(
-                db,
-                dbGame,
-                hasDB,
-                hasCSS,
+            let gameVersion = {
+                gameid: {
+                    toSqlString: () => gameFull.gameid,
+                },
+                version: gameFull.latest_version + 1,
+                status: 2,
                 screentype,
                 resow,
                 resoh,
-                screenwidth
-            );
+                screenwidth,
+                protocol: hasGameProtocol ? 1 : 0,
+                settings: hasGameSettings ? 1 : 0,
+                db: hasDB ? 1 : 0,
+                css: hasCSS ? 1 : 0,
+            }
+
+            gameVersion = await devgame.createGameVersion(db, gameVersion);
 
             let gameResult = await devgame.updateGame(
                 gameWithSetings,
@@ -342,9 +362,9 @@ export default class DevGameAPI {
             );
 
             mysql.end("createDevGame");
-            merged.game_slug = req.game.game_slug;
+            merged.game_slug = gameFull.game_slug;
 
-            let json = req.game;
+            let json = gameFull;
             let jsonStr = JSON.stringify(merged);
             res.write(jsonStr);
             res.end();
