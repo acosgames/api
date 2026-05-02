@@ -108,6 +108,7 @@ import PersonAPI from "./src/api/person.js";
 import DevGameAPI from "./src/api/devgame.js";
 import ServerAPI from "./src/api/server.js";
 import GameAPI from "./src/api/game.js";
+import StatsAPI from "./src/api/stats.js";
 import NotificationsAPI from "./src/api/notifications.js";
 import LeaderboardAPI from "./src/api/leaderboard.js";
 import { AddressInfo } from "net";
@@ -117,6 +118,7 @@ const person = new PersonAPI();
 const devgame = new DevGameAPI();
 const server = new ServerAPI();
 const game = new GameAPI();
+const stats = new StatsAPI();   
 const leaderboard = new LeaderboardAPI();
 
 app.get("/version", async (req, res, next) => {
@@ -261,6 +263,7 @@ app.use(person.routes(socialAuthentication));
 app.use(devgame.routes(socialAuthentication));
 app.use(game.actionRoutes(socialAuthentication));
 app.use(leaderboard.actionRoutes(socialAuthentication));
+app.use(stats.routes(socialAuthentication));
 
 app.use("/sitemap.txt", (req, res, next) => {
     res.setHeader("Content-Type", "text/plain");

@@ -40,7 +40,7 @@ export default class GameAPI {
         );
 
         this.router.get(
-            "/api/v1/game/replays/:game_slug",
+            "/api/v1/game/replays/:game_slug/:shortid?",
             middleware,
             this.apiFindGameReplays.bind(this)
         );
@@ -201,7 +201,8 @@ export default class GameAPI {
         let replays = null;
         try {
             let game_slug = req.params.game_slug;
-            replays = await game.findGameReplays(game_slug);
+            let shortid = req.params.shortid;
+            replays = await game.findGameReplays(game_slug, shortid);
         } catch (e) {
             next(e);
             return;

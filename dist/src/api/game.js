@@ -24,7 +24,7 @@ export default class GameAPI {
                 });
         this.router.get("/api/v1/games", middleware, this.apiFindGames.bind(this));
         this.router.get("/api/v1/game/:game_slug", middleware, this.apiFindGame.bind(this));
-        this.router.get("/api/v1/game/replays/:game_slug", middleware, this.apiFindGameReplays.bind(this));
+        this.router.get("/api/v1/game/replays/:game_slug/:shortid?", middleware, this.apiFindGameReplays.bind(this));
         return this.router;
     }
     actionRoutes(middleware) {
@@ -140,7 +140,8 @@ export default class GameAPI {
         let replays = null;
         try {
             let game_slug = req.params.game_slug;
-            replays = await game.findGameReplays(game_slug);
+            let shortid = req.params.shortid;
+            replays = await game.findGameReplays(game_slug, shortid);
         }
         catch (e) {
             next(e);
